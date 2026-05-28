@@ -1,12 +1,12 @@
 "use client";
 
-import { Lock, ArrowRight } from "lucide-react";
+import { Lock, ArrowRight, Sparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { useSubscription } from "@/shared/hooks/use-subscription";
 
 export function SubscriptionGuard({ children }: { children: React.ReactNode }) {
-  const { currentPlan, isLoading } = useSubscription();
+  const { hasAccess, trial, isLoading } = useSubscription();
   const router = useRouter();
 
   if (isLoading) {
@@ -17,7 +17,7 @@ export function SubscriptionGuard({ children }: { children: React.ReactNode }) {
     );
   }
 
-  if (!currentPlan) {
+  if (!hasAccess) {
     return (
       <div className="relative min-h-[60vh] flex items-center justify-center">
         {/* Background blur overlay */}
@@ -36,8 +36,8 @@ export function SubscriptionGuard({ children }: { children: React.ReactNode }) {
               Área restrita
             </h2>
             <p className="text-sm text-zinc-500 mb-6 leading-relaxed">
-              Você precisa de um plano ativo para acessar esta funcionalidade.
-              Assine agora e libere todo o potencial do StudioHub.
+              Seu período de teste de 7 dias expirou.
+              Assine agora e continue usando o StudioHub.
             </p>
 
             <div className="space-y-3">
@@ -59,5 +59,24 @@ export function SubscriptionGuard({ children }: { children: React.ReactNode }) {
     );
   }
 
-  return <>{children}</>;
+  return (
+    <>
+      {/* Trial banner */}
+      {trial.isInTrial && (
+        <div className="mb-4 flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-500/10 border border-amber-500/20">
+          <Sparkles className="size-3.5 text-amber-400" />
+          <span className="text-xs text-amber-300">
+            Teste gratuito: <span className="font-bold">{trial.daysLeft} dia{trial.daysLeft !== 1 ? "s" : ""}</span> restante{trial.daysLeft !== 1 ? "s" : ""}
+          </span>
+          <button
+            onClick={() => router.push("/dashboard/billing")}
+            className="ml-auto text-[10px] text-amber-400 hover:text-amber-300 font-medium underline"
+          >
+            Assinar agora
+          </button>
+        </div>
+      )}
+      {children}
+    </>
+  );
 }

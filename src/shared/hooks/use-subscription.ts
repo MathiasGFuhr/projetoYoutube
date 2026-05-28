@@ -27,12 +27,19 @@ export interface Subscription {
   plan: Plan | null;
 }
 
+export interface TrialInfo {
+  isInTrial: boolean;
+  daysLeft: number;
+  trialEndsAt: string | null;
+}
+
 const CACHE_TTL = 60000; // 1 minute
 
 export function useSubscription() {
   const { user } = useAuth();
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [plans, setPlans] = useState<Plan[]>([]);
+  const [trial, setTrial] = useState<TrialInfo>({ isInTrial: false, daysLeft: 0, trialEndsAt: null });
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingPlans, setIsLoadingPlans] = useState(true);
 
@@ -41,13 +48,15 @@ export function useSubscription() {
   const fetchSubscription = useCallback(async () => {
     if (!user) {
       setSubscription(null);
+      setTrial({ isInTrial: false, daysLeft: 0, trialEndsAt: null });
       setIsLoading(false);
       return;
     }
 
     setIsLoading(true);
     try {
-      const { data, error } = await supabase
+      // Fetch subscription
+      const { data: subData, error: subError } = await supabase
         .from("subscriptions")
         .select(`
           id, plan_id, status, current_period_end, cancel_at_period_end,
@@ -56,14 +65,39 @@ export function useSubscription() {
         .eq("user_id", user.id)
         .single();
 
-      if (error && error.code !== "PGRST116") {
-        console.error("[useSubscription] fetch error:", error);
+      if (subError && subError.code !== "PGRST116") {
+        console.error("[useSubscription] fetch error:", subError);
       }
 
-      if (!data) {
+      if (!subData) {
         setSubscription(null);
       } else {
-        setSubscription(data as unknown as Subscription);
+        setSubscription(subData as unknown as Subscription);
+      }
+
+      // Fetch trial info from profile
+      const { data: profileData } = await supabase
+        .from("profiles")
+        .select("trial_ends_at, created_at")
+        .eq("id", user.id)
+        .single();
+
+      if (profileData) {
+        const trialEnds = profileData.trial_ends_at 
+          ? new Date(profileData.trial_ends_at) 
+          : profileData.created_at 
+            ? new Date(new Date(profileData.created_at).getTime() + 7 * 24 * 60 * 60 * 1000)
+            : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+        
+        const now = new Date();
+        const isInTrial = trialEnds > now;
+        const daysLeft = isInTrial ? Math.ceil((trialEnds.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)) : 0;
+
+        setTrial({
+          isInTrial,
+          daysLeft,
+          trialEndsAt: trialEnds.toISOString(),
+        });
       }
     } finally {
       setIsLoading(false);
@@ -113,14 +147,17 @@ export function useSubscription() {
   );
 
   const isActive = subscription?.status === "active" || subscription?.status === "trialing";
+  const hasAccess = isActive || trial.isInTrial;
 
   return {
     subscription,
     currentPlan,
     plans,
+    trial,
     isLoading,
     isLoadingPlans,
     isActive,
+    hasAccess,
     canCreateChannel,
     canCreateVideo,
     refetch: fetchSubscription,

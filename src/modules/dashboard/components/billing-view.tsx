@@ -9,7 +9,7 @@ import { toast } from "sonner";
 
 export function BillingView() {
   const { user, isLoading: isAuthLoading } = useAuth();
-  const { currentPlan, plans, isLoadingPlans, subscription, refetch } = useSubscription();
+  const { currentPlan, plans, isLoadingPlans, subscription, trial, refetch } = useSubscription();
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [isAnnual, setIsAnnual] = useState(false);
@@ -165,10 +165,17 @@ export function BillingView() {
                   )}
                 </span>
               </div>
+            ) : trial.isInTrial ? (
+              <div className="mb-4 flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-500/5 border border-amber-500/10">
+                <div className="size-2 rounded-full bg-amber-400 animate-pulse" />
+                <span className="text-xs text-zinc-300">
+                  Teste gratuito <span className="text-amber-400 font-medium">{trial.daysLeft} dia{trial.daysLeft !== 1 ? "s" : ""} restante{trial.daysLeft !== 1 ? "s" : ""}</span>
+                </span>
+              </div>
             ) : (
               <div className="mb-4 flex items-center gap-2 px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-800">
                 <div className="size-2 rounded-full bg-zinc-600" />
-                <span className="text-xs text-zinc-500">Sem plano ativo</span>
+                <span className="text-xs text-zinc-500">Sem plano ativo · Teste expirado</span>
               </div>
             )}
 
