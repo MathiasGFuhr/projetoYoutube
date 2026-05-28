@@ -150,6 +150,22 @@ export function useSubscription() {
     fetchPlans();
   }, [fetchSubscription, fetchPlans]);
 
+  // Listen for auth state changes to reload subscription when session becomes available
+  useEffect(() => {
+    const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        if (event === "SIGNED_IN" || event === "INITIAL_SESSION") {
+          console.log("[useSubscription] Auth state changed:", event);
+          // Small delay to ensure cookies are propagated
+          setTimeout(() => {
+            fetchSubscription();
+          }, 100);
+        }
+      }
+    );
+    return () => authSubscription.unsubscribe();
+  }, [supabase, fetchSubscription]);
+
   const currentPlan = subscription?.plan ?? plans.find((p) => p.slug === "free") ?? null;
 
   const canCreateChannel = useCallback(
