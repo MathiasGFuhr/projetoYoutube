@@ -349,18 +349,20 @@ export function BillingView() {
                 </div>
 
                 {/* CTA */}
-                {currentPlan?.id === activePlan.id ? (
+                {hasAnyActivePlan ? (
                   <div className="space-y-3">
                     <div className="w-full py-3.5 rounded-xl bg-emerald-500/[0.06] border border-emerald-500/15 text-emerald-400 text-sm font-semibold flex items-center justify-center gap-2 cursor-default">
                       <Check className="size-4" />
                       Plano Ativo
                     </div>
-                    <button
-                      onClick={() => setShowCancelModal(true)}
-                      className="w-full py-2.5 rounded-xl text-[13px] text-zinc-600 hover:text-red-400 transition-colors"
-                    >
-                      Cancelar assinatura
-                    </button>
+                    {!hasLifetimeActive && (
+                      <button
+                        onClick={() => setShowCancelModal(true)}
+                        className="w-full py-2.5 rounded-xl text-[13px] text-zinc-600 hover:text-red-400 transition-colors"
+                      >
+                        Cancelar assinatura
+                      </button>
+                    )}
                   </div>
                 ) : (
                   <button
