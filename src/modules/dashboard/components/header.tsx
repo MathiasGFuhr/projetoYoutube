@@ -1,10 +1,31 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
-import { Bell, ChevronDown, Loader2, User, LogOut, Search } from "lucide-react";
+import { Bell, ChevronDown, Loader2, User, LogOut, Search, Calendar } from "lucide-react";
 import { useAuth } from "@/shared/hooks/use-auth";
 import { useSignOut } from "@/modules/auth/hooks/use-sign-out";
+
+function Clock() {
+  const [now, setNow] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const timeStr = now.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+  const dateStr = now.toLocaleDateString("pt-BR", { day: "2-digit", month: "short" });
+
+  return (
+    <div className="hidden lg:flex items-center gap-2 px-2.5 py-1 rounded-lg bg-zinc-900/50 border border-zinc-800/40">
+      <Calendar className="size-3 text-zinc-600" />
+      <span className="text-[11px] text-zinc-500 font-medium">{dateStr}</span>
+      <span className="text-[11px] text-zinc-600">·</span>
+      <span className="text-[11px] text-zinc-400 font-mono tabular-nums">{timeStr}</span>
+    </div>
+  );
+}
 
 const ROUTE_LABELS: Record<string, string> = {
   "/dashboard": "Painel Principal",
@@ -37,6 +58,8 @@ export function DashboardHeader() {
       <div className="flex items-center gap-3 min-w-0">
         <h1 className="text-sm font-semibold text-zinc-200 truncate">{pageLabel}</h1>
       </div>
+
+      <Clock />
 
       {/* Search */}
       <div className="hidden md:flex items-center gap-2 h-8 px-3 rounded-lg bg-zinc-900/70 border border-zinc-800/60 text-zinc-500 hover:border-zinc-700 transition-colors flex-1 max-w-xs">
