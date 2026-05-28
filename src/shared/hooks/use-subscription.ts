@@ -53,37 +53,53 @@ export function useSubscription() {
 
     setIsLoading(true);
     try {
+      console.log("[useSubscription] Fetching for user:", user.id);
+
       // Fetch subscription - get the most recent active/paid one first
       const { data: subData, error: subError } = await supabase
         .from("subscriptions")
         .select(`
-          id, plan_id, status, current_period_end, cancel_at_period_end,
-          plan:plans (*)
+          id, plan_id, status, current_period_end, cancel_at_period_end
         `)
         .eq("user_id", user.id)
         .in("status", ["active", "trialing"])
         .order("created_at", { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
 
-      if (subError && subError.code !== "PGRST116") {
+      console.log("[useSubscription] sub query:", { subData, subError: subError?.message });
+
+      if (subError) {
         console.error("[useSubscription] fetch error:", subError);
       }
 
-      if (!subData) {
-        setSubscription(null);
-      } else {
-        setSubscription(subData as unknown as Subscription);
+      let fetchedSubscription: Subscription | null = null;
+
+      if (subData) {
+        // Fetch the plan separately
+        const { data: planData } = await supabase
+          .from("plans")
+          .select("*")
+          .eq("id", subData.plan_id)
+          .single();
+
+        fetchedSubscription = {
+          ...subData,
+          plan: planData as Plan ?? null,
+        } as Subscription;
       }
+
+      setSubscription(fetchedSubscription);
+      console.log("[useSubscription] Set subscription:", fetchedSubscription?.status, fetchedSubscription?.plan?.name);
 
       // Fetch trial info from profile
       const { data: profileData, error: profileError } = await supabase
         .from("profiles")
         .select("trial_ends_at, created_at")
         .eq("id", user.id)
-        .single();
+        .maybeSingle();
 
-      if (profileError && profileError.code !== "PGRST116") {
+      if (profileError) {
         console.error("[useSubscription] profile fetch error:", profileError);
       }
 
@@ -103,6 +119,8 @@ export function useSubscription() {
         daysLeft,
         trialEndsAt: trialEnds.toISOString(),
       });
+
+      console.log("[useSubscription] trial:", { isInTrial, daysLeft });
     } finally {
       setIsLoading(false);
     }
