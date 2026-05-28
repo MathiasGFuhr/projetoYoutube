@@ -31,6 +31,12 @@ export function AuthProvider({
   const [session, setSession] = useState<AuthSession | null>(initialSession);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Sync initialUser when it changes (e.g., after login with different account)
+  useEffect(() => {
+    setUser(initialUser);
+    setSession(initialSession);
+  }, [initialUser, initialSession]);
+
   const refreshSession = useCallback(async () => {
     if (!getEnv()) return;
     const supabase = getSupabaseBrowserClient();
