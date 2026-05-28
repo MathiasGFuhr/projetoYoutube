@@ -37,9 +37,9 @@ export async function signInAction(
       console.log("[signInAction] Login success, session:", !!data.session);
     }
   } catch (err: any) {
-    console.error("[signInAction] Exception:", err.message);
+    console.error("[signInAction] Exception:", err.message, err.stack);
     hasError = true;
-    errorMessage = "Erro ao conectar com o servidor. Tente novamente.";
+    errorMessage = `Erro: ${err.message}`;
   }
 
   if (hasError) {
