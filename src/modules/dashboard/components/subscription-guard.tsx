@@ -187,9 +187,8 @@ export function SubscriptionGuard({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // Don't show trial banner if user has an active paid subscription
-  const hasActivePaidSubscription = subscription?.status === "active" && !trial.isInTrial;
-  const showTrialBanner = trial.isInTrial && !hasActivePaidSubscription;
+  // Show trial banner only if user is in trial AND has no active subscription at all
+  const showTrialBanner = trial.isInTrial && !subscription;
 
   return (
     <>
