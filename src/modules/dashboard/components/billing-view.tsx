@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Check, Loader2, Crown, Zap, RefreshCw, ArrowRight, AlertTriangle } from "lucide-react";
+import { Check, Loader2, Crown, Zap, RefreshCw, ArrowRight, AlertTriangle, Sparkles, Play } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSubscription } from "@/shared/hooks/use-subscription";
 import { useAuth } from "@/shared/hooks/use-auth";
@@ -12,7 +12,7 @@ export function BillingView() {
   const { currentPlan, plans, isLoadingPlans, subscription, trial, refetch } = useSubscription();
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-  const [isAnnual, setIsAnnual] = useState(false);
+  const [isAnnual, setIsAnnual] = useState(true); // Default to annual for better conversion
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
 
@@ -90,45 +90,82 @@ export function BillingView() {
   const activePlan = isAnnual ? yearlyPlan : monthlyPlan;
   const otherPlan = isAnnual ? monthlyPlan : yearlyPlan;
 
-  const FEATURES = [
-    "Centralize toda sua operação YouTube",
+  const MONTHLY_FEATURES = [
+    "Controle múltiplos canais em um só lugar",
     "Organize lançamentos sem caos",
-    "Gerencie múltiplos canais em um só lugar",
     "Pipeline inteligente de produção",
-    "Analytics para decisões estratégicas",
-    "Controle profissional do conteúdo",
+    "Analytics avançado para creators",
+    "Escale sua operação com clareza",
+    "Calendário editorial profissional",
   ];
 
-  return (
-    <div className="p-4 sm:p-6 flex flex-col items-center justify-center min-h-[calc(100vh-3rem)]">
-      <div className="w-full max-w-xl">
-        {/* ── Header ── */}
-        <div className="text-center mb-6">
-          <h1 className="text-2xl font-bold text-white mb-1">Planos</h1>
-          <p className="text-xs text-zinc-500">Escolha a frequência de pagamento</p>
-        </div>
+  const YEARLY_FEATURES = [
+    "Tudo do plano mensal",
+    "2 meses grátis por ano",
+    "Prioridade em novos recursos",
+    "Suporte prioritário dedicado",
+    "Backup automático avançado",
+    "Relatórios customizados",
+  ];
 
-        {/* ── Success ── */}
+  const FEATURES = isAnnual ? YEARLY_FEATURES : MONTHLY_FEATURES;
+
+  return (
+    <div className="relative min-h-[calc(100vh-3rem)] flex flex-col items-center justify-start pt-8 sm:pt-12 pb-12 px-4 overflow-hidden">
+      {/* Ambient glow */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-red-600/[0.07] blur-[120px] rounded-full pointer-events-none" />
+      <div className="absolute top-[20%] right-[10%] w-[300px] h-[300px] bg-red-500/[0.04] blur-[100px] rounded-full pointer-events-none" />
+
+      <div className="relative w-full max-w-lg mx-auto">
+        {/* ── Success Banner ── */}
         {showSuccess && (
-          <div className="mb-4 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Check className="size-4 text-emerald-400" />
-              <span className="text-xs text-zinc-300">Pagamento confirmado! Ative seu plano.</span>
+          <div className="mb-6 p-4 rounded-2xl bg-emerald-500/[0.08] border border-emerald-500/20 flex items-center justify-between animate-in fade-in slide-in-from-top-2 duration-500">
+            <div className="flex items-center gap-3">
+              <div className="size-8 rounded-lg bg-emerald-500/15 flex items-center justify-center">
+                <Check className="size-4 text-emerald-400" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-white">Pagamento confirmado!</p>
+                <p className="text-xs text-zinc-500">Seu plano Pro está ativo.</p>
+              </div>
             </div>
-            <button onClick={() => { refetch(); setShowSuccess(false); }} className="text-emerald-400 hover:text-emerald-300">
-              <RefreshCw className="size-3.5" />
+            <button
+              onClick={() => { refetch(); setShowSuccess(false); }}
+              className="p-2 rounded-lg hover:bg-emerald-500/10 text-emerald-400 transition-colors"
+            >
+              <RefreshCw className="size-4" />
             </button>
           </div>
         )}
 
+        {/* ── Hero Section ── */}
+        <div className="text-center mb-8">
+          {/* Trial badge */}
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-500/[0.08] border border-red-500/20 mb-5 relative overflow-hidden group">
+            <div className="absolute inset-0 bg-gradient-to-r from-red-500/0 via-red-500/10 to-red-500/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+            <Sparkles className="size-3.5 text-red-400" />
+            <span className="text-[11px] font-semibold text-red-300 tracking-wide">7 DIAS GRÁTIS</span>
+          </div>
+
+          <h1 className="text-3xl sm:text-4xl font-black text-white tracking-[-0.04em] mb-3 leading-tight">
+            Escolha sua{" "}
+            <span className="bg-gradient-to-r from-red-400 via-red-300 to-red-500 bg-clip-text text-transparent">
+              operação
+            </span>
+          </h1>
+          <p className="text-sm sm:text-base text-zinc-500 max-w-md mx-auto leading-relaxed">
+            Organize canais, lançamentos e produção em uma estrutura profissional.
+          </p>
+        </div>
+
         {/* ── Toggle ── */}
-        <div className="flex justify-center mb-6">
-          <div className="flex bg-zinc-900 rounded-lg p-0.5 border border-zinc-800">
+        <div className="flex justify-center mb-7">
+          <div className="relative flex bg-zinc-950/80 rounded-2xl p-1 border border-zinc-800/80 backdrop-blur-sm">
             <button
               onClick={() => setIsAnnual(false)}
               className={cn(
-                "px-4 py-1.5 rounded-md text-xs font-medium transition-all",
-                !isAnnual ? "bg-zinc-700 text-white" : "text-zinc-500 hover:text-zinc-300"
+                "relative px-5 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-300 z-10",
+                !isAnnual ? "text-white" : "text-zinc-500 hover:text-zinc-300"
               )}
             >
               Mensal
@@ -136,170 +173,257 @@ export function BillingView() {
             <button
               onClick={() => setIsAnnual(true)}
               className={cn(
-                "px-4 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-1.5",
-                isAnnual ? "bg-zinc-700 text-white" : "text-zinc-500 hover:text-zinc-300"
+                "relative px-5 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-300 z-10 flex items-center gap-2",
+                isAnnual ? "text-white" : "text-zinc-500 hover:text-zinc-300"
               )}
             >
               Anual
-              <span className="text-[9px] bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded-full">-23%</span>
+              <span className="text-[10px] bg-red-500/15 text-red-400 px-2 py-0.5 rounded-full border border-red-500/20 font-semibold">
+                2 meses grátis
+              </span>
             </button>
+            {/* Sliding background */}
+            <div
+              className={cn(
+                "absolute top-1 bottom-1 rounded-xl bg-zinc-800/80 border border-zinc-700/50 transition-all duration-300",
+                isAnnual ? "left-[50%] right-1" : "left-1 right-[50%]"
+              )}
+              style={{ width: isAnnual ? "calc(50% - 4px)" : "calc(50% - 4px)" }}
+            />
           </div>
         </div>
 
         {/* ── Loading ── */}
         {isLoadingPlans ? (
-          <div className="flex justify-center py-12">
-            <Loader2 className="size-5 animate-spin text-zinc-600" />
+          <div className="flex justify-center py-16">
+            <Loader2 className="size-6 animate-spin text-zinc-600" />
           </div>
         ) : activePlan ? (
           <>
-            {/* ── Current Status ── */}
+            {/* ── Status Indicator ── */}
             {currentPlan ? (
-              <div className="mb-4 flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-500/5 border border-emerald-500/10">
-                <div className="size-2 rounded-full bg-emerald-400" />
-                <span className="text-xs text-zinc-300">
-                  {currentPlan.name} <span className="text-emerald-400">Ativo</span>
-                  {subscription?.current_period_end && (
-                    <span className="text-zinc-600 ml-1">
-                      · Renova {new Date(subscription.current_period_end).toLocaleDateString("pt-BR")}
-                    </span>
-                  )}
-                </span>
+              <div className="mb-5 flex items-center justify-center gap-2">
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/[0.06] border border-emerald-500/15">
+                  <div className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  <span className="text-xs text-zinc-400">
+                    Pro <span className="text-emerald-400 font-medium">Ativo</span>
+                  </span>
+                </div>
               </div>
             ) : trial.isInTrial ? (
-              <div className="mb-4 flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-500/5 border border-amber-500/10">
-                <div className="size-2 rounded-full bg-amber-400 animate-pulse" />
-                <span className="text-xs text-zinc-300">
-                  Teste gratuito <span className="text-amber-400 font-medium">{trial.daysLeft} dia{trial.daysLeft !== 1 ? "s" : ""} restante{trial.daysLeft !== 1 ? "s" : ""}</span>
-                </span>
+              <div className="mb-5 flex items-center justify-center gap-2">
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-500/[0.06] border border-amber-500/15">
+                  <div className="size-1.5 rounded-full bg-amber-400 animate-pulse" />
+                  <span className="text-xs text-zinc-400">
+                    Teste: <span className="text-amber-400 font-medium">{trial.daysLeft}d restantes</span>
+                  </span>
+                </div>
               </div>
-            ) : (
-              <div className="mb-4 flex items-center gap-2 px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-800">
-                <div className="size-2 rounded-full bg-zinc-600" />
-                <span className="text-xs text-zinc-500">Sem plano ativo · Teste expirado</span>
-              </div>
-            )}
+            ) : null}
 
-            {/* ── Main Card ── */}
-            <div className={cn(
-              "rounded-2xl border p-5 mb-4",
-              currentPlan?.id === activePlan.id
-                ? "bg-emerald-500/[0.03] border-emerald-500/20"
-                : "bg-zinc-900/50 border-zinc-800/60"
-            )}>
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <div className={cn(
-                    "w-10 h-10 rounded-xl flex items-center justify-center",
-                    isAnnual ? "bg-violet-500/15" : "bg-blue-500/15"
-                  )}>
-                    {isAnnual ? (
-                      <Crown className="size-5 text-violet-400" />
-                    ) : (
-                      <Zap className="size-5 text-blue-400" />
-                    )}
+            {/* ── Main Pricing Card ── */}
+            <div className="relative mb-4 group">
+              {/* Card glow effect */}
+              <div className="absolute -inset-[1px] rounded-[22px] bg-gradient-to-b from-red-500/20 via-red-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+
+              <div className={cn(
+                "relative rounded-[20px] border p-6 sm:p-8 transition-all duration-500",
+                currentPlan?.id === activePlan.id
+                  ? "bg-emerald-500/[0.02] border-emerald-500/20"
+                  : "bg-zinc-950/60 border-zinc-800/60 backdrop-blur-xl"
+              )}>
+                {/* Popular badge */}
+                {isAnnual && currentPlan?.id !== activePlan.id && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                    <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-600 text-white text-[10px] font-bold tracking-wide shadow-[0_0_20px_rgba(220,38,38,0.4)]">
+                      <Crown className="size-3" />
+                      MAIS ESCOLHIDO
+                    </div>
                   </div>
-                  <div>
-                    <h2 className="text-base font-bold text-white">Pro {isAnnual ? "Anual" : "Mensal"}</h2>
-                    <p className="text-[11px] text-zinc-500">
-                      {isAnnual ? "Economize R$ 35,88/ano" : "Cancele quando quiser"}
+                )}
+
+                {/* Header */}
+                <div className="flex items-start justify-between mb-6">
+                  <div className="flex items-center gap-3">
+                    <div className={cn(
+                      "w-11 h-11 rounded-xl flex items-center justify-center transition-colors duration-300",
+                      isAnnual
+                        ? "bg-red-500/10 border border-red-500/20"
+                        : "bg-zinc-800/80 border border-zinc-700/50"
+                    )}>
+                      {isAnnual ? (
+                        <Crown className="size-5 text-red-400" />
+                      ) : (
+                        <Zap className="size-5 text-zinc-400" />
+                      )}
+                    </div>
+                    <div>
+                      <h2 className="text-lg font-bold text-white tracking-tight">StudioHub Pro</h2>
+                      <p className="text-xs text-zinc-500 mt-0.5">
+                        {isAnnual ? "Anual · Economize 23%" : "Mensal · Cancele quando quiser"}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Price */}
+                <div className="mb-6">
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-[15px] text-zinc-500 font-medium">R$</span>
+                    <span className="text-5xl font-black text-white tracking-tight">
+                      {Math.floor(activePlan.price_cents / 100)}
+                    </span>
+                    <span className="text-xl text-zinc-500 font-medium">
+                      ,{(activePlan.price_cents % 100).toString().padStart(2, "0")}
+                    </span>
+                    <span className="text-sm text-zinc-600 ml-1 font-medium">/{isAnnual ? "ano" : "mês"}</span>
+                  </div>
+                  {isAnnual && monthlyPlan && (
+                    <p className="text-xs text-zinc-600 mt-1">
+                      Equivalente a {formatPrice(Math.round(monthlyPlan.price_cents * 0.77))}/mês
                     </p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <div className="text-2xl font-bold text-white">
-                    {formatPrice(activePlan.price_cents)}
-                  </div>
-                  <div className="text-[11px] text-zinc-500">/{isAnnual ? "ano" : "mês"}</div>
-                </div>
-              </div>
-
-              {/* ── Features ── */}
-              <div className="grid grid-cols-2 gap-x-6 gap-y-2 mb-5">
-                {FEATURES.map((f) => (
-                  <div key={f} className="flex items-center gap-2">
-                    <Check className={cn("size-3.5 flex-shrink-0", isAnnual ? "text-violet-400" : "text-blue-400")} />
-                    <span className="text-xs text-zinc-400">{f}</span>
-                  </div>
-                ))}
-              </div>
-
-              {/* ── CTA ── */}
-              {currentPlan?.id === activePlan.id ? (
-                <div className="space-y-2">
-                  <button disabled className="w-full py-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold flex items-center justify-center gap-1.5 cursor-default">
-                    <Check className="size-3.5" />
-                    Plano Atual
-                  </button>
-                  <button
-                    onClick={() => setShowCancelModal(true)}
-                    className="w-full py-2 rounded-xl text-[11px] text-zinc-500 hover:text-red-400 transition-colors"
-                  >
-                    Cancelar assinatura
-                  </button>
-                </div>
-              ) : (
-                <button
-                  onClick={() => handleSubscribe(activePlan)}
-                  disabled={isRedirecting}
-                  className={cn(
-                    "w-full py-2.5 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-1.5",
-                    isAnnual
-                      ? "bg-white text-black hover:bg-zinc-200"
-                      : "bg-zinc-800 text-white hover:bg-zinc-700 border border-zinc-700"
                   )}
-                >
-                  {isRedirecting ? <Loader2 className="size-3.5 animate-spin" /> : null}
-                  Assinar {isAnnual ? "Anual" : "Mensal"}
-                  {!isRedirecting && <ArrowRight className="size-3" />}
-                </button>
-              )}
+                </div>
+
+                {/* Subtitle */}
+                <p className="text-sm text-zinc-400 mb-6 leading-relaxed">
+                  Transforme sua produção em uma operação profissional.
+                </p>
+
+                {/* Divider */}
+                <div className="h-px bg-gradient-to-r from-transparent via-zinc-800/80 to-transparent mb-6" />
+
+                {/* Features */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 mb-7">
+                  {FEATURES.map((f, i) => (
+                    <div key={f} className="flex items-center gap-3 group/item">
+                      <div className={cn(
+                        "size-5 rounded-md flex items-center justify-center flex-shrink-0 transition-colors duration-300",
+                        isAnnual ? "bg-red-500/10" : "bg-zinc-800/80"
+                      )}>
+                        <Check className={cn(
+                          "size-3 transition-colors duration-300",
+                          isAnnual ? "text-red-400" : "text-zinc-400"
+                        )} />
+                      </div>
+                      <span className="text-[13px] text-zinc-400 group-hover/item:text-zinc-300 transition-colors duration-300">
+                        {f}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* CTA */}
+                {currentPlan?.id === activePlan.id ? (
+                  <div className="space-y-3">
+                    <div className="w-full py-3.5 rounded-xl bg-emerald-500/[0.06] border border-emerald-500/15 text-emerald-400 text-sm font-semibold flex items-center justify-center gap-2 cursor-default">
+                      <Check className="size-4" />
+                      Plano Ativo
+                    </div>
+                    <button
+                      onClick={() => setShowCancelModal(true)}
+                      className="w-full py-2.5 rounded-xl text-[13px] text-zinc-600 hover:text-red-400 transition-colors"
+                    >
+                      Cancelar assinatura
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => handleSubscribe(activePlan)}
+                    disabled={isRedirecting}
+                    className={cn(
+                      "relative w-full py-3.5 rounded-xl text-sm font-bold tracking-wide transition-all duration-300 flex items-center justify-center gap-2 overflow-hidden group/btn",
+                      isAnnual
+                        ? "bg-red-600 text-white shadow-[0_0_40px_rgba(220,38,38,0.3)] hover:shadow-[0_0_60px_rgba(220,38,38,0.5)] hover:bg-red-500"
+                        : "bg-white text-black hover:bg-zinc-100 shadow-[0_0_30px_rgba(255,255,255,0.1)]"
+                    )}
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover/btn:translate-x-[100%] transition-transform duration-700" />
+                    {isRedirecting ? (
+                      <Loader2 className="size-4 animate-spin" />
+                    ) : (
+                      <>
+                        <Play className="size-4" />
+                        Começar operação Pro
+                      </>
+                    )}
+                  </button>
+                )}
+
+                {/* Microcopy */}
+                <div className="mt-4 flex items-center justify-center gap-1.5">
+                  <div className="size-1 rounded-full bg-zinc-700" />
+                  <p className="text-[11px] text-zinc-600">
+                    Pagamento seguro via Stripe · Cancele quando quiser
+                  </p>
+                </div>
+              </div>
             </div>
 
-            {/* ── Other Option ── */}
+            {/* ── Other Plan Teaser ── */}
             {otherPlan && currentPlan?.id !== otherPlan.id && (
               <button
                 onClick={() => setIsAnnual(!isAnnual)}
-                className="w-full py-2.5 rounded-xl border border-zinc-800 text-zinc-500 text-xs hover:text-zinc-300 hover:border-zinc-700 transition-all"
+                className="w-full group relative rounded-2xl border border-zinc-800/60 bg-zinc-950/40 p-5 backdrop-blur-sm hover:border-zinc-700/60 transition-all duration-300"
               >
-                Ver plano {isAnnual ? "mensal" : "anual"} · {formatPrice(otherPlan.price_cents)}/{isAnnual ? "mês" : "ano"}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center group-hover:border-zinc-700 transition-colors">
+                      {isAnnual ? (
+                        <Zap className="size-4 text-zinc-500 group-hover:text-zinc-400 transition-colors" />
+                      ) : (
+                        <Crown className="size-4 text-zinc-500 group-hover:text-zinc-400 transition-colors" />
+                      )}
+                    </div>
+                    <div className="text-left">
+                      <p className="text-sm font-medium text-zinc-300 group-hover:text-white transition-colors">
+                        Plano {isAnnual ? "mensal" : "anual"}
+                      </p>
+                      <p className="text-xs text-zinc-600">
+                        {isAnnual ? "Mais flexível" : "Melhor custo-benefício"}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-semibold text-zinc-400 group-hover:text-white transition-colors">
+                      {formatPrice(otherPlan.price_cents)}
+                    </p>
+                    <p className="text-[11px] text-zinc-600">/{isAnnual ? "mês" : "ano"}</p>
+                  </div>
+                </div>
               </button>
             )}
           </>
         ) : null}
-
-        <p className="mt-4 text-center text-[10px] text-zinc-700">
-          Pagamento seguro via Stripe · Cancele quando quiser
-        </p>
       </div>
 
       {/* ── Cancel Modal ── */}
       {showCancelModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-          <div className="w-full max-w-sm rounded-2xl bg-[#111] border border-zinc-800 p-6 shadow-2xl">
-            <div className="flex items-center justify-center mb-4">
-              <div className="size-12 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center">
-                <AlertTriangle className="size-6 text-red-400" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="w-full max-w-sm rounded-3xl bg-zinc-950 border border-zinc-800 p-7 shadow-2xl shadow-black/80 animate-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-center mb-5">
+              <div className="size-14 rounded-2xl bg-red-500/[0.08] border border-red-500/20 flex items-center justify-center">
+                <AlertTriangle className="size-7 text-red-400" />
               </div>
             </div>
-            <h3 className="text-lg font-bold text-white text-center mb-2">Cancelar assinatura?</h3>
-            <p className="text-sm text-zinc-400 text-center mb-6">
-              Você continuará com acesso até o fim do período pago ({subscription?.current_period_end ? new Date(subscription.current_period_end).toLocaleDateString("pt-BR") : ""}).
+            <h3 className="text-xl font-bold text-white text-center mb-2">Cancelar assinatura?</h3>
+            <p className="text-sm text-zinc-500 text-center mb-7 leading-relaxed">
+              Você continuará com acesso Pro até o fim do período pago.
             </p>
             <div className="flex gap-3">
               <button
                 onClick={() => setShowCancelModal(false)}
-                className="flex-1 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-400 text-xs font-semibold hover:bg-zinc-800 transition-colors"
+                className="flex-1 py-3 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-400 text-sm font-medium hover:bg-zinc-800 transition-colors"
               >
                 Manter plano
               </button>
               <button
                 onClick={handleCancel}
                 disabled={isCancelling}
-                className="flex-1 py-2.5 rounded-xl bg-red-600 text-white text-xs font-semibold hover:bg-red-500 transition-colors flex items-center justify-center gap-1.5"
+                className="flex-1 py-3 rounded-xl bg-red-600 text-white text-sm font-semibold hover:bg-red-500 transition-colors flex items-center justify-center gap-2"
               >
-                {isCancelling ? <Loader2 className="size-3.5 animate-spin" /> : null}
-                Confirmar cancelamento
+                {isCancelling ? <Loader2 className="size-4 animate-spin" /> : null}
+                Confirmar
               </button>
             </div>
           </div>
