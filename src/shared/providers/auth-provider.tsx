@@ -29,7 +29,8 @@ export function AuthProvider({
 }: AuthProviderProps) {
   const [user, setUser] = useState<AuthUser | null>(initialUser);
   const [session, setSession] = useState<AuthSession | null>(initialSession);
-  const [isLoading, setIsLoading] = useState(true);
+  // If SSR provides user, we already know auth state — skip initial loading
+  const [isLoading, setIsLoading] = useState(!initialUser);
 
   // Sync initialUser when it changes (e.g., after login with different account)
   useEffect(() => {
