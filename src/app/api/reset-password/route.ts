@@ -1,74 +1,64 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { createSupabaseServerClient } from "@/core/lib/supabase/server";
+import { rateLimit, getRateLimitIdentifier } from "@/lib/rate-limit";
 
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-
+/**
+ * Secure password reset using Supabase Auth magic link flow.
+ * Sends a password reset email with a secure token link.
+ * NEVER allows direct password reset without email verification.
+ */
 export async function POST(req: NextRequest) {
   try {
-    if (!SERVICE_ROLE_KEY) {
+    // Rate limit: 3 requests per 15 minutes per IP
+    const limit = rateLimit(getRateLimitIdentifier(req) + ":reset-password", 3, 15 * 60 * 1000);
+    if (!limit.success) {
       return NextResponse.json(
-        { error: "SUPABASE_SERVICE_ROLE_KEY não configurada" },
-        { status: 500 }
+        { error: "Muitas tentativas. Aguarde 15 minutos." },
+        { status: 429 }
       );
     }
 
-    const { email, password } = await req.json();
+    const { email } = await req.json();
 
-    if (!email || !password) {
+    if (!email || typeof email !== "string") {
       return NextResponse.json(
-        { error: "E-mail e senha são obrigatórios" },
+        { error: "E-mail é obrigatório" },
         { status: 400 }
       );
     }
 
-    const adminClient = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
-      },
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return NextResponse.json(
+        { error: "E-mail inválido" },
+        { status: 400 }
+      );
+    }
+
+    const supabase = await createSupabaseServerClient();
+
+    // Supabase resetPasswordForEmail sends a secure magic link
+    // The link contains a one-time token that expires
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/atualizar-senha`,
     });
 
-    // Buscar usuário pelo email
-    const { data: users, error: listError } =
-      await adminClient.auth.admin.listUsers();
-
-    if (listError) {
-      console.error("[reset-password] listUsers error:", listError);
-      return NextResponse.json(
-        { error: "Erro ao buscar usuário" },
-        { status: 500 }
-      );
+    if (error) {
+      // Return generic message to prevent user enumeration
+      console.error("[reset-password] Supabase error:", error);
     }
 
-    const user = users.users.find((u) => u.email === email);
-
-    if (!user) {
-      return NextResponse.json(
-        { error: "Usuário não encontrado" },
-        { status: 404 }
-      );
-    }
-
-    // Atualizar senha
-    const { error: updateError } = await adminClient.auth.admin.updateUserById(
-      user.id,
-      { password }
-    );
-
-    if (updateError) {
-      console.error("[reset-password] updateUser error:", updateError);
-      return NextResponse.json(
-        { error: updateError.message },
-        { status: 500 }
-      );
-    }
-
-    return NextResponse.json({ success: true });
+    // Always return success to prevent user enumeration attacks
+    // Even if email doesn't exist, attacker shouldn't know
+    return NextResponse.json({
+      success: true,
+      message: "Se o e-mail estiver cadastrado, você receberá instruções para redefinir sua senha.",
+    });
   } catch (err: any) {
     console.error("[reset-password] unexpected error:", err);
     return NextResponse.json(
-      { error: err.message || "Erro interno" },
+      { error: "Erro interno. Tente novamente." },
       { status: 500 }
     );
   }

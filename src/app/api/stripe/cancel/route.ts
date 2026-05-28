@@ -1,10 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/core/lib/supabase/server";
+import { rateLimit, getRateLimitIdentifier } from "@/lib/rate-limit";
 
 const STRIPE_SECRET = process.env.STRIPE_SECRET_KEY!;
 
 export async function POST(req: NextRequest) {
   try {
+    // Rate limit: 3 requests per minute per IP
+    const limit = rateLimit(getRateLimitIdentifier(req) + ":stripe-cancel", 3, 60 * 1000);
+    if (!limit.success) {
+      return NextResponse.json(
+        { error: "Muitas tentativas. Aguarde um momento." },
+        { status: 429 }
+      );
+    }
+
     const supabase = await createSupabaseServerClient();
     const { data: { user } } = await supabase.auth.getUser();
 

@@ -63,8 +63,6 @@ export function BillingView() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           priceId: plan.stripe_price_id,
-          userId: user.id,
-          email: user.email,
           planId: plan.id,
         }),
       });
