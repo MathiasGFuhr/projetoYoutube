@@ -30,6 +30,7 @@ export async function signUpAction(
   let errorMessage = "";
 
   try {
+    console.log("[signUpAction] Attempting signup for:", parsed.data.email);
     const supabase = await createSupabaseServerClient();
 
     // Sign up — when email confirmation is disabled, Supabase returns a session immediately
@@ -41,23 +42,33 @@ export async function signUpAction(
       },
     });
 
+    console.log("[signUpAction] signUp result:", { error: signUpError?.message, hasSession: !!signUpData.session, userId: signUpData.user?.id });
+
     if (signUpError) {
       hasError = true;
       errorMessage = resolveAuthErrorMessage(signUpError.message);
+      console.error("[signUpAction] Signup error:", signUpError.message, signUpError.status);
     } else if (!signUpData.session) {
+      console.log("[signUpAction] No session, trying manual signin...");
       // If no session returned, try manual sign in
-      const { error: signInError } = await supabase.auth.signInWithPassword({
+      const { error: signInError, data: signInData } = await supabase.auth.signInWithPassword({
         email: parsed.data.email,
         password: parsed.data.password,
       });
 
+      console.log("[signUpAction] Manual signin result:", { error: signInError?.message, hasSession: !!signInData.session });
+
       if (signInError) {
         hasError = true;
         errorMessage = resolveAuthErrorMessage(signInError.message);
+        console.error("[signUpAction] Manual signin error:", signInError.message);
       }
+    } else {
+      console.log("[signUpAction] Signup success with session");
     }
     // When signUpData.session exists, cookies are already set by Supabase SSR
-  } catch {
+  } catch (err: any) {
+    console.error("[signUpAction] Exception:", err.message);
     hasError = true;
     errorMessage = "Erro ao criar conta. Tente novamente.";
   }

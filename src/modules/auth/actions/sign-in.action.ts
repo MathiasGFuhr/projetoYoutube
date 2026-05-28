@@ -23,14 +23,21 @@ export async function signInAction(
   let errorMessage = "";
 
   try {
+    console.log("[signInAction] Attempting login for:", parsed.data.email);
     const supabase = await createSupabaseServerClient();
-    const { error } = await supabase.auth.signInWithPassword(parsed.data);
+    const { error, data } = await supabase.auth.signInWithPassword(parsed.data);
+
+    console.log("[signInAction] Supabase response:", { error: error?.message, hasSession: !!data.session });
 
     if (error) {
       hasError = true;
       errorMessage = resolveAuthErrorMessage(error.message);
+      console.error("[signInAction] Login error:", error.message, error.status);
+    } else {
+      console.log("[signInAction] Login success, session:", !!data.session);
     }
-  } catch {
+  } catch (err: any) {
+    console.error("[signInAction] Exception:", err.message);
     hasError = true;
     errorMessage = "Erro ao conectar com o servidor. Tente novamente.";
   }
