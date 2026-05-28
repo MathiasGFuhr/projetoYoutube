@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/core/lib/supabase/server";
 import { loginSchema } from "@/modules/auth/schemas/login.schema";
+import { resolveAuthErrorMessage } from "@/core/errors/error-handler";
 import type { ActionState } from "@/types/api";
 import type { LoginFormValues } from "@/modules/auth/schemas/login.schema";
 
@@ -18,15 +19,15 @@ export async function signInAction(
     };
   }
 
-  const supabase = await createSupabaseServerClient();
-  const { error, data } = await supabase.auth.signInWithPassword(parsed.data);
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { error } = await supabase.auth.signInWithPassword(parsed.data);
 
-  if (error) {
-    return { success: false, error: `AUTH_ERROR: ${error.message} (status: ${error.status})` };
-  }
-
-  if (!data.session) {
-    return { success: false, error: "No session returned from Supabase" };
+    if (error) {
+      return { success: false, error: resolveAuthErrorMessage(error.message) };
+    }
+  } catch {
+    return { success: false, error: "Erro ao conectar com o servidor. Tente novamente." };
   }
 
   redirect("/dashboard");

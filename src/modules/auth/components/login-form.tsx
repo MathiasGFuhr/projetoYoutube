@@ -32,16 +32,11 @@ export function LoginForm({ onToggle }: LoginFormProps) {
   });
 
   const onSubmit = handleSubmit((data) => {
-    console.log("[LoginForm] Submitting login for:", data.email);
     localStorage.setItem(REMEMBER_ME_KEY, String(data.rememberMe));
     startTransition(async () => {
       const result = await signInAction(data);
-      console.log("[LoginForm] Result:", result);
       if (!result.success && result.error) {
-        console.error("[LoginForm] Error:", result.error);
         toast.error(result.error);
-      } else if (result.success) {
-        console.log("[LoginForm] Login successful, redirecting...");
       }
     });
   });
