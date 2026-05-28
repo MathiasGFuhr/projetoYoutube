@@ -56,6 +56,7 @@ export function BillingView() {
       return;
     }
 
+    console.log("[billing] Subscribing to plan:", plan.slug, "priceId:", plan.stripe_price_id);
     setIsRedirecting(true);
     try {
       const res = await fetch("/api/stripe/checkout", {

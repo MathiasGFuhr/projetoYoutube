@@ -53,7 +53,7 @@ export function useSubscription() {
 
     setIsLoading(true);
     try {
-      // Fetch subscription
+      // Fetch subscription - get the most recent active/paid one first
       const { data: subData, error: subError } = await supabase
         .from("subscriptions")
         .select(`
@@ -61,6 +61,9 @@ export function useSubscription() {
           plan:plans (*)
         `)
         .eq("user_id", user.id)
+        .in("status", ["active", "trialing"])
+        .order("created_at", { ascending: false })
+        .limit(1)
         .single();
 
       if (subError && subError.code !== "PGRST116") {

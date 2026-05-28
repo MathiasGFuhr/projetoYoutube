@@ -134,7 +134,7 @@ function TrialBanner({ daysLeft, onSubscribe }: { daysLeft: number; onSubscribe:
 }
 
 export function SubscriptionGuard({ children }: { children: React.ReactNode }) {
-  const { hasAccess, trial, isLoading } = useSubscription();
+  const { hasAccess, trial, subscription, isLoading } = useSubscription();
   const router = useRouter();
 
   if (isLoading) {
@@ -187,10 +187,14 @@ export function SubscriptionGuard({ children }: { children: React.ReactNode }) {
     );
   }
 
+  // Don't show trial banner if user has an active paid subscription
+  const hasActivePaidSubscription = subscription?.status === "active" && !trial.isInTrial;
+  const showTrialBanner = trial.isInTrial && !hasActivePaidSubscription;
+
   return (
     <>
-      {/* Premium trial banner */}
-      {trial.isInTrial && (
+      {/* Premium trial banner - only show if user is in trial and doesn't have paid subscription */}
+      {showTrialBanner && (
         <TrialBanner
           daysLeft={trial.daysLeft}
           onSubscribe={() => router.push("/dashboard/billing")}
