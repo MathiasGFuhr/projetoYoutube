@@ -91,11 +91,12 @@ export function BillingView() {
   const otherPlan = isAnnual ? monthlyPlan : yearlyPlan;
 
   const FEATURES = [
-    "10 canais do YouTube",
-    "100 vídeos/mês",
-    "5 membros na equipe",
-    "Analytics avançado",
-    "Suporte prioritário",
+    "Centralize toda sua operação YouTube",
+    "Organize lançamentos sem caos",
+    "Gerencie múltiplos canais em um só lugar",
+    "Pipeline inteligente de produção",
+    "Analytics para decisões estratégicas",
+    "Controle profissional do conteúdo",
   ];
 
   return (
