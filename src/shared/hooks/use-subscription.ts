@@ -33,8 +33,6 @@ export interface TrialInfo {
   trialEndsAt: string | null;
 }
 
-const CACHE_TTL = 60000; // 1 minute
-
 export function useSubscription() {
   const { user } = useAuth();
   const [subscription, setSubscription] = useState<Subscription | null>(null);

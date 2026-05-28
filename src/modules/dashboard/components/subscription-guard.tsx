@@ -36,8 +36,8 @@ export function SubscriptionGuard({ children }: { children: React.ReactNode }) {
               Área restrita
             </h2>
             <p className="text-sm text-zinc-500 mb-6 leading-relaxed">
-              Seu período de teste de 7 dias expirou.
-              Assine agora e continue usando o StudioHub.
+              Acesso liberado apenas para assinantes.
+              Assine um plano para continuar usando o StudioHub.
             </p>
 
             <div className="space-y-3">

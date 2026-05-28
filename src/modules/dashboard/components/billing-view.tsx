@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Check, Loader2, Crown, Zap, RefreshCw, ArrowRight, AlertTriangle, X } from "lucide-react";
+import { Check, Loader2, Crown, Zap, RefreshCw, ArrowRight, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSubscription } from "@/shared/hooks/use-subscription";
 import { useAuth } from "@/shared/hooks/use-auth";

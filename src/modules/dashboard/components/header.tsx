@@ -7,12 +7,16 @@ import { useAuth } from "@/shared/hooks/use-auth";
 import { useSignOut } from "@/modules/auth/hooks/use-sign-out";
 
 function Clock() {
-  const [now, setNow] = useState(new Date());
+  const [now, setNow] = useState<Date | null>(null);
 
   useEffect(() => {
+    setNow(new Date());
     const timer = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
+
+  // Prevent hydration mismatch by not rendering until mounted
+  if (!now) return null;
 
   const timeStr = now.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
   const dateStr = now.toLocaleDateString("pt-BR", { day: "2-digit", month: "short" });

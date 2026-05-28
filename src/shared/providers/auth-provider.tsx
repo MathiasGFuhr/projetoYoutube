@@ -76,18 +76,8 @@ export function AuthProvider({
     return () => subscription.unsubscribe();
   }, []);
 
-  useEffect(() => {
-    const rememberMe = localStorage.getItem("studiohub-remember-me");
-    if (rememberMe !== "false") return;
-
-    const handleBeforeUnload = () => {
-      const client = getSupabaseBrowserClient();
-      client.auth.signOut();
-    };
-
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, []);
+  // Note: removed beforeunload signOut to prevent page unload blocking
+  // The Supabase session is managed by the client library automatically
 
   const value = useMemo<AuthContextValue>(
     () => ({ user, session, isLoading, signOut, refreshSession }),

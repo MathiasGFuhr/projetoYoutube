@@ -40,7 +40,7 @@ export async function updateSession(request: NextRequest): Promise<NextResponse>
 
   if (!user && pathname.startsWith("/dashboard")) {
     const url = request.nextUrl.clone();
-    url.pathname = "/login";
+    url.pathname = "/auth";
     return NextResponse.redirect(url);
   }
 
