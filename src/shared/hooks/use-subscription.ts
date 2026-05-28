@@ -34,7 +34,7 @@ export interface TrialInfo {
 }
 
 export function useSubscription() {
-  const { user } = useAuth();
+  const { user, isLoading: authIsLoading } = useAuth();
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [plans, setPlans] = useState<Plan[]>([]);
   const [trial, setTrial] = useState<TrialInfo>({ isInTrial: false, daysLeft: 0, trialEndsAt: null });
@@ -158,7 +158,7 @@ export function useSubscription() {
     currentPlan,
     plans,
     trial,
-    isLoading,
+    isLoading: isLoading || authIsLoading,
     isLoadingPlans,
     isActive,
     hasAccess,
