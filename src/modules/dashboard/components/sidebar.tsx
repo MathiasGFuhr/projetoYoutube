@@ -13,6 +13,7 @@ import {
   LogOut,
   Loader2,
   Database,
+  CreditCard,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/shared/hooks/use-auth";
@@ -43,6 +44,7 @@ function useNavItems() {
 }
 
 const BOTTOM_ITEMS: NavItem[] = [
+  { label: "Planos", icon: CreditCard, href: "/dashboard/billing" },
   { label: "Configurações", icon: Settings, href: "/dashboard/settings" },
 ];
 

@@ -14,6 +14,7 @@ const ROUTE_LABELS: Record<string, string> = {
   "/dashboard/team": "Equipe",
   "/dashboard/analytics": "Analytics",
   "/dashboard/settings": "Configurações",
+  "/dashboard/billing": "Planos e Assinatura",
 };
 
 export function DashboardHeader() {

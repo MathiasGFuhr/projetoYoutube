@@ -140,6 +140,57 @@ export type Database = {
           },
         ]
       }
+      plans: {
+        Row: {
+          analytics_level: string
+          channel_limit: number
+          created_at: string | null
+          features: Json | null
+          id: string
+          interval: string
+          is_active: boolean
+          name: string
+          price_cents: number
+          priority: number
+          slug: string
+          stripe_price_id: string | null
+          team_limit: number
+          video_limit: number
+        }
+        Insert: {
+          analytics_level?: string
+          channel_limit?: number
+          created_at?: string | null
+          features?: Json | null
+          id?: string
+          interval?: string
+          is_active?: boolean
+          name: string
+          price_cents: number
+          priority?: number
+          slug: string
+          stripe_price_id?: string | null
+          team_limit?: number
+          video_limit?: number
+        }
+        Update: {
+          analytics_level?: string
+          channel_limit?: number
+          created_at?: string | null
+          features?: Json | null
+          id?: string
+          interval?: string
+          is_active?: boolean
+          name?: string
+          price_cents?: number
+          priority?: number
+          slug?: string
+          stripe_price_id?: string | null
+          team_limit?: number
+          video_limit?: number
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -147,6 +198,7 @@ export type Database = {
           email: string | null
           full_name: string | null
           id: string
+          stripe_customer_id: string | null
           updated_at: string | null
         }
         Insert: {
@@ -155,6 +207,7 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id: string
+          stripe_customer_id?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -163,9 +216,60 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id?: string
+          stripe_customer_id?: string | null
           updated_at?: string | null
         }
         Relationships: []
+      }
+      subscriptions: {
+        Row: {
+          cancel_at_period_end: boolean
+          created_at: string | null
+          current_period_end: string | null
+          current_period_start: string | null
+          id: string
+          plan_id: string
+          status: string
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          cancel_at_period_end?: boolean
+          created_at?: string | null
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          plan_id: string
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          cancel_at_period_end?: boolean
+          created_at?: string | null
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          plan_id?: string
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscriptions_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "plans"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       videos: {
         Row: {
