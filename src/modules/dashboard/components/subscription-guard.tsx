@@ -10,70 +10,97 @@ function TrialBanner({ daysLeft, onSubscribe }: { daysLeft: number; onSubscribe:
   // Dynamic visual intensity based on remaining days
   const intensity = daysLeft <= 1 ? "high" : daysLeft <= 3 ? "medium" : "low";
 
-  const glowOpacity = intensity === "high" ? 0.25 : intensity === "medium" ? 0.15 : 0.08;
-  const borderOpacity = intensity === "high" ? 0.45 : intensity === "medium" ? 0.35 : 0.25;
-  const pulseAnimation = intensity === "high" ? "animate-pulse" : "";
+  // Copy that changes dynamically based on urgency
+  const headline =
+    intensity === "high"
+      ? daysLeft === 1
+        ? "Último dia de acesso ao StudioHub Pro"
+        : "Seu acesso Pro expira em breve"
+      : intensity === "medium"
+        ? `Seu acesso Pro expira em ${daysLeft} dias`
+        : `Seu teste do StudioHub Pro termina em ${daysLeft} dias`;
+
+  const subheadline =
+    intensity === "high"
+      ? "Assine agora para não perder seu progresso e continuar sua operação."
+      : "Continue sua operação sem perder acesso aos recursos premium.";
+
+  const ctaText = intensity === "high" ? "Assinar agora" : "Continuar com Pro";
+
+  // Visual settings per intensity
+  const glowOpacity = intensity === "high" ? 0.3 : intensity === "medium" ? 0.18 : 0.1;
+  const borderOpacity = intensity === "high" ? 0.5 : intensity === "medium" ? 0.38 : 0.28;
+  const bgFrom = intensity === "high" ? "rgba(255,30,45,0.1)" : "rgba(255,30,45,0.06)";
+  const bgTo = intensity === "high" ? "rgba(255,80,0,0.08)" : "rgba(255,140,0,0.04)";
+  const iconBg =
+    intensity === "high"
+      ? "bg-red-500/15 border-red-500/35"
+      : intensity === "medium"
+        ? "bg-orange-500/12 border-orange-500/30"
+        : "bg-amber-500/10 border-amber-500/22";
+  const iconColor =
+    intensity === "high" ? "text-red-400" : intensity === "medium" ? "text-orange-400" : "text-amber-400";
 
   return (
     <div className="relative mb-6 group">
       {/* Ambient glow behind banner */}
       <div
         className={cn(
-          "absolute -inset-1 rounded-2xl blur-xl transition-opacity duration-500",
-          pulseAnimation
+          "absolute -inset-[2px] rounded-[22px] blur-2xl transition-opacity duration-700",
+          intensity === "high" && "animate-pulse"
         )}
         style={{ backgroundColor: `rgba(255, 30, 45, ${glowOpacity})` }}
       />
 
+      {/* Inner glow */}
+      <div
+        className="absolute -inset-[1px] rounded-[20px] blur-md transition-opacity duration-700"
+        style={{
+          background: `linear-gradient(135deg, rgba(255,60,30,${glowOpacity * 0.6}) 0%, rgba(255,120,0,${glowOpacity * 0.4}) 100%)`,
+        }}
+      />
+
       {/* Main banner */}
       <div
-        className={cn(
-          "relative flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-5 p-5 sm:p-6 rounded-2xl backdrop-blur-xl transition-all duration-500",
-          "border"
-        )}
+        className="relative flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 p-5 sm:p-6 rounded-[20px] backdrop-blur-xl transition-all duration-500 border"
         style={{
-          background: `linear-gradient(135deg, rgba(255,30,45,0.08) 0%, rgba(255,140,0,0.06) 100%)`,
-          borderColor: `rgba(255, 120, 0, ${borderOpacity})`,
+          background: `linear-gradient(135deg, ${bgFrom} 0%, ${bgTo} 100%)`,
+          borderColor: `rgba(255, 100, 0, ${borderOpacity})`,
         }}
       >
         {/* Left: Premium icon with glow */}
         <div className="relative flex-shrink-0">
           <div
             className="absolute inset-0 rounded-xl blur-lg transition-opacity duration-500"
-            style={{ backgroundColor: `rgba(255, 30, 45, ${glowOpacity * 1.5})` }}
+            style={{ backgroundColor: `rgba(255, 30, 45, ${glowOpacity * 1.8})` }}
           />
           <div
             className={cn(
-              "relative w-12 h-12 rounded-xl flex items-center justify-center border",
-              intensity === "high" && "bg-red-500/15 border-red-500/30",
-              intensity === "medium" && "bg-orange-500/12 border-orange-500/25",
-              intensity === "low" && "bg-amber-500/10 border-amber-500/20"
+              "relative w-12 h-12 rounded-xl flex items-center justify-center border transition-all duration-500",
+              iconBg
             )}
           >
             {intensity === "high" ? (
-              <Rocket className="size-5.5 text-red-400" />
+              <Rocket className={cn("size-5", iconColor)} />
             ) : intensity === "medium" ? (
-              <Zap className="size-5.5 text-orange-400" />
+              <Zap className={cn("size-5", iconColor)} />
             ) : (
-              <Crown className="size-5.5 text-amber-400" />
+              <Crown className={cn("size-5", iconColor)} />
             )}
           </div>
         </div>
 
         {/* Center: Headline + Subheadline */}
         <div className="flex-1 min-w-0">
-          <h3 className="text-base sm:text-lg font-bold text-white tracking-tight mb-1">
-            {intensity === "high"
-              ? "Últimas horas do seu acesso Pro"
-              : intensity === "medium"
-                ? "Seu acesso Pro está ativo"
-                : "Você está usando o StudioHub Pro"}
+          <h3
+            className={cn(
+              "text-base sm:text-lg font-bold tracking-tight mb-1.5 transition-colors duration-500",
+              intensity === "high" ? "text-white" : "text-zinc-100"
+            )}
+          >
+            {headline}
           </h3>
-          <p className="text-sm text-zinc-400 leading-relaxed">
-            {daysLeft === 1
-              ? "Aproveite todos os recursos premium por mais 1 dia. Não perca seu progresso."
-              : `Aproveite todos os recursos premium por mais ${daysLeft} dias.`}
-          </p>
+          <p className="text-sm text-zinc-400 leading-relaxed">{subheadline}</p>
         </div>
 
         {/* Right: CTA */}
@@ -81,16 +108,23 @@ function TrialBanner({ daysLeft, onSubscribe }: { daysLeft: number; onSubscribe:
           <button
             onClick={onSubscribe}
             className={cn(
-              "relative w-full sm:w-auto px-5 py-2.5 rounded-xl text-sm font-bold tracking-wide transition-all duration-300 overflow-hidden group/btn",
+              "relative w-full sm:w-auto px-6 py-2.5 rounded-xl text-sm font-bold tracking-wide transition-all duration-300 overflow-hidden group/btn",
               intensity === "high"
-                ? "bg-red-600 text-white shadow-[0_0_30px_rgba(220,38,38,0.35)] hover:shadow-[0_0_45px_rgba(220,38,38,0.55)] hover:bg-red-500"
-                : "bg-white/10 text-white border border-white/20 hover:bg-white/20 hover:border-white/30 backdrop-blur-sm"
+                ? "bg-red-600 text-white shadow-[0_0_35px_rgba(220,38,38,0.4)] hover:shadow-[0_0_50px_rgba(220,38,38,0.6)] hover:bg-red-500 hover:scale-[1.02]"
+                : "bg-white/10 text-white border border-white/20 hover:bg-white/20 hover:border-white/35 hover:scale-[1.02] backdrop-blur-sm shadow-[0_0_20px_rgba(255,255,255,0.05)]"
             )}
           >
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover/btn:translate-x-[100%] transition-transform duration-700" />
             <span className="relative flex items-center justify-center gap-2">
-              {intensity === "high" ? "Assinar agora" : "Continuar com Pro"}
-              <ArrowRight className="size-3.5 group-hover/btn:translate-x-0.5 transition-transform" />
+              {ctaText}
+              <ArrowRight
+                className={cn(
+                  "size-3.5 transition-transform duration-300",
+                  intensity === "high"
+                    ? "group-hover/btn:translate-x-1"
+                    : "group-hover/btn:translate-x-0.5"
+                )}
+              />
             </span>
           </button>
         </div>
