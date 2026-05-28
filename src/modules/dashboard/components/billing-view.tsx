@@ -12,9 +12,10 @@ export function BillingView() {
   const { currentPlan, plans, isLoadingPlans, subscription, trial, refetch } = useSubscription();
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-  const [isAnnual, setIsAnnual] = useState(true); // Default to annual for better conversion
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
+
+  // isAnnual state will be initialized after we know the active plan
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -86,8 +87,29 @@ export function BillingView() {
 
   const monthlyPlan = plans.find((p) => p.slug === "pro-monthly");
   const yearlyPlan = plans.find((p) => p.slug === "pro-yearly");
+  const lifetimePlan = plans.find((p) => p.slug === "lifetime");
+
+  // Determine user's active plan interval
+  const activeInterval = subscription?.plan?.interval ?? subscription?.plan?.slug ?? null;
+  const hasMonthlyActive = subscription?.plan?.slug === "pro-monthly";
+  const hasYearlyActive = subscription?.plan?.slug === "pro-yearly";
+  const hasLifetimeActive = subscription?.plan?.slug === "lifetime";
+  const hasAnyActivePlan = subscription?.status === "active" && subscription.plan;
+
+  // UI state: default to annual, but if user has monthly active, start with monthly
+  const [isAnnual, setIsAnnual] = useState(() => {
+    if (hasMonthlyActive) return false;
+    return true;
+  });
+
   const activePlan = isAnnual ? yearlyPlan : monthlyPlan;
   const otherPlan = isAnnual ? monthlyPlan : yearlyPlan;
+
+  // Only allow switching: monthly → annual (upgrade)
+  // Block: annual → monthly (downgrade) and lifetime → anything
+  const canSwitchToMonthly = !hasAnyActivePlan || (!hasYearlyActive && !hasLifetimeActive);
+  const canSwitchToAnnual = !hasAnyActivePlan || hasMonthlyActive;
+  const canSwitchPlan = !hasYearlyActive && !hasLifetimeActive;
 
   const MONTHLY_FEATURES = [
     "Controle múltiplos canais em um só lugar",
@@ -161,19 +183,23 @@ export function BillingView() {
         <div className="flex justify-center mb-7">
           <div className="relative flex bg-zinc-950/80 rounded-2xl p-1 border border-zinc-800/80 backdrop-blur-sm">
             <button
-              onClick={() => setIsAnnual(false)}
+              onClick={() => canSwitchToMonthly && setIsAnnual(false)}
+              disabled={!canSwitchToMonthly}
               className={cn(
                 "relative px-5 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-300 z-10",
-                !isAnnual ? "text-white" : "text-zinc-500 hover:text-zinc-300"
+                !isAnnual ? "text-white" : "text-zinc-500 hover:text-zinc-300",
+                !canSwitchToMonthly && "opacity-50 cursor-not-allowed"
               )}
             >
               Mensal
             </button>
             <button
-              onClick={() => setIsAnnual(true)}
+              onClick={() => canSwitchToAnnual && setIsAnnual(true)}
+              disabled={!canSwitchToAnnual}
               className={cn(
                 "relative px-5 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-300 z-10 flex items-center gap-2",
-                isAnnual ? "text-white" : "text-zinc-500 hover:text-zinc-300"
+                isAnnual ? "text-white" : "text-zinc-500 hover:text-zinc-300",
+                !canSwitchToAnnual && "opacity-50 cursor-not-allowed"
               )}
             >
               Anual
@@ -201,13 +227,23 @@ export function BillingView() {
           <>
             {/* ── Status Indicator ── */}
             {currentPlan ? (
-              <div className="mb-5 flex items-center justify-center gap-2">
+              <div className="mb-5 flex flex-col items-center gap-2">
                 <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/[0.06] border border-emerald-500/15">
                   <div className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
                   <span className="text-xs text-zinc-400">
-                    Pro <span className="text-emerald-400 font-medium">Ativo</span>
+                    {hasLifetimeActive ? "Vitalício" : hasYearlyActive ? "Anual" : "Mensal"} <span className="text-emerald-400 font-medium">Ativo</span>
                   </span>
                 </div>
+                {hasYearlyActive && (
+                  <p className="text-[11px] text-zinc-600">
+                    Downgrade para mensal disponível após o término do período anual
+                  </p>
+                )}
+                {hasLifetimeActive && (
+                  <p className="text-[11px] text-zinc-600">
+                    Plano vitalício — sem renovações
+                  </p>
+                )}
               </div>
             ) : trial.isInTrial ? (
               <div className="mb-5 flex items-center justify-center gap-2">
@@ -360,7 +396,7 @@ export function BillingView() {
             </div>
 
             {/* ── Other Plan Teaser ── */}
-            {otherPlan && currentPlan?.id !== otherPlan.id && (
+            {otherPlan && currentPlan?.id !== otherPlan.id && canSwitchPlan && (
               <button
                 onClick={() => setIsAnnual(!isAnnual)}
                 className="w-full group relative rounded-2xl border border-zinc-800/60 bg-zinc-950/40 p-5 backdrop-blur-sm hover:border-zinc-700/60 transition-all duration-300"
