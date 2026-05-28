@@ -77,29 +77,32 @@ export function useSubscription() {
       }
 
       // Fetch trial info from profile
-      const { data: profileData } = await supabase
+      const { data: profileData, error: profileError } = await supabase
         .from("profiles")
         .select("trial_ends_at, created_at")
         .eq("id", user.id)
         .single();
 
-      if (profileData) {
-        const trialEnds = profileData.trial_ends_at 
-          ? new Date(profileData.trial_ends_at) 
-          : profileData.created_at 
-            ? new Date(new Date(profileData.created_at).getTime() + 7 * 24 * 60 * 60 * 1000)
-            : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-        
-        const now = new Date();
-        const isInTrial = trialEnds > now;
-        const daysLeft = isInTrial ? Math.ceil((trialEnds.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)) : 0;
-
-        setTrial({
-          isInTrial,
-          daysLeft,
-          trialEndsAt: trialEnds.toISOString(),
-        });
+      if (profileError && profileError.code !== "PGRST116") {
+        console.error("[useSubscription] profile fetch error:", profileError);
       }
+
+      // Calculate trial: use profile.trial_ends_at, or fallback to user.created_at + 7 days
+      const trialEnds = profileData?.trial_ends_at
+        ? new Date(profileData.trial_ends_at)
+        : user?.created_at
+          ? new Date(new Date(user.created_at).getTime() + 7 * 24 * 60 * 60 * 1000)
+          : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
+      const now = new Date();
+      const isInTrial = trialEnds > now;
+      const daysLeft = isInTrial ? Math.ceil((trialEnds.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)) : 0;
+
+      setTrial({
+        isInTrial,
+        daysLeft,
+        trialEndsAt: trialEnds.toISOString(),
+      });
     } finally {
       setIsLoading(false);
     }
