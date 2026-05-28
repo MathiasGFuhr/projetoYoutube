@@ -18,11 +18,15 @@ const PLAN_COLORS: Record<string, string> = {
 };
 
 export function BillingView() {
-  const { user } = useAuth();
+  const { user, isLoading: isAuthLoading } = useAuth();
   const { currentPlan, plans, isLoading, isLoadingPlans, subscription, isActive } = useSubscription();
   const [isRedirecting, setIsRedirecting] = useState(false);
 
   const handleSubscribe = async (plan: typeof plans[0]) => {
+    if (isAuthLoading) {
+      toast.loading("Carregando...");
+      return;
+    }
     if (!user?.email) {
       toast.error("Você precisa estar logado para assinar um plano.");
       return;

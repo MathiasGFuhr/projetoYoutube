@@ -58,6 +58,13 @@ export function AuthProvider({
 
     const supabase = getSupabaseBrowserClient();
 
+    // Get existing session on mount
+    supabase.auth.getSession().then(({ data: { session: existingSession } }) => {
+      setSession(existingSession);
+      setUser(existingSession?.user ?? null);
+      setIsLoading(false);
+    });
+
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event: AuthChangeEvent, newSession: Session | null) => {
@@ -65,8 +72,6 @@ export function AuthProvider({
       setUser(newSession?.user ?? null);
       setIsLoading(false);
     });
-
-    setIsLoading(false);
 
     return () => subscription.unsubscribe();
   }, []);
