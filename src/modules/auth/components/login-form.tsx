@@ -37,6 +37,9 @@ export function LoginForm({ onToggle }: LoginFormProps) {
       const result = await signInAction(data);
       if (!result.success && result.error) {
         toast.error(result.error);
+      } else if (result.success) {
+        // Force hard reload to ensure layout re-renders with new user data
+        window.location.href = "/dashboard";
       }
     });
   });
