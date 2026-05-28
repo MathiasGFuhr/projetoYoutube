@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import { CheckCircle2, Calendar, ExternalLink, Trash2, Search, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { SubscriptionGuard } from "@/modules/dashboard/components/subscription-guard";
 import { useChannels } from "@/shared/hooks/use-channels";
 
 interface Video {
@@ -118,7 +119,8 @@ export function PublishedView() {
   };
 
   return (
-    <div className="p-4 sm:p-6 min-h-screen">
+    <SubscriptionGuard>
+      <div className="p-4 sm:p-6 min-h-screen">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-3 sm:gap-4">
         {/* Left */}
@@ -183,6 +185,7 @@ export function PublishedView() {
           Exibindo {filtered.length} de {videos.length} publicados
         </p>
       )}
-    </div>
+      </div>
+    </SubscriptionGuard>
   );
 }

@@ -23,6 +23,7 @@ import { useChannels } from "@/shared/hooks/use-channels";
 import { useChannelMutations } from "@/shared/hooks/use-channel-mutations";
 import { useVideos } from "@/shared/hooks/use-videos";
 import { useVideoMutations } from "@/shared/hooks/use-video-mutations";
+import { SubscriptionGuard } from "@/modules/dashboard/components/subscription-guard";
 import { toast } from "sonner";
 
 interface Channel {
@@ -118,7 +119,8 @@ export function DashboardView({ displayName }: { displayName: string }) {
   }), [videos]);
 
   return (
-    <div className="flex flex-col min-h-full">
+    <SubscriptionGuard>
+      <div className="flex flex-col min-h-full">
       {/* Page header */}
       <div className="sticky top-0 z-20 bg-[#0d0d0d]/95 backdrop-blur-sm border-b border-zinc-800/50 px-4 sm:px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
@@ -383,6 +385,7 @@ export function DashboardView({ displayName }: { displayName: string }) {
           }
         }}
       />
-    </div>
+      </div>
+    </SubscriptionGuard>
   );
 }

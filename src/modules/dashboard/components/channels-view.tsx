@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { useChannels } from "@/shared/hooks/use-channels";
 import { useVideos } from "@/shared/hooks/use-videos";
 import { useChannelMutations } from "@/shared/hooks/use-channel-mutations";
+import { SubscriptionGuard } from "@/modules/dashboard/components/subscription-guard";
 import { useUploadImage } from "@/shared/hooks/use-upload-image";
 import type { Channel } from "@/shared/hooks/use-channels";
 
@@ -429,7 +430,8 @@ export function ChannelsView() {
   };
 
   return (
-    <div className="p-4 sm:p-6 min-h-screen">
+    <SubscriptionGuard>
+      <div className="p-4 sm:p-6 min-h-screen">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-6 gap-3 sm:gap-4">
         <div>
@@ -485,6 +487,7 @@ export function ChannelsView() {
       {editing !== null && (
         <ChannelModal initial={editing} onSave={handleSave} onClose={() => setEditing(null)} />
       )}
-    </div>
+      </div>
+    </SubscriptionGuard>
   );
 }

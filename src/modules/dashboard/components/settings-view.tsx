@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { Camera, Save, Settings, Upload, User, X } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { SubscriptionGuard } from "@/modules/dashboard/components/subscription-guard";
 import { useAuth } from "@/shared/hooks/use-auth";
 import { useUpdateProfile } from "@/shared/hooks/use-update-profile";
 import { useUploadAvatar } from "@/shared/hooks/use-upload-avatar";
@@ -73,7 +74,8 @@ export function SettingsView() {
   const inputClass = "w-full bg-zinc-900/80 border border-zinc-700/60 rounded-xl px-4 py-3 text-sm text-zinc-200 placeholder:text-zinc-600 focus:outline-none focus:border-zinc-500 transition-colors";
 
   return (
-    <div className="p-4 sm:p-6 min-h-screen max-w-4xl">
+    <SubscriptionGuard>
+      <div className="p-4 sm:p-6 min-h-screen max-w-4xl">
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
         <div className="size-9 rounded-xl bg-red-500/15 border border-red-500/25 flex items-center justify-center flex-shrink-0">
@@ -177,6 +179,7 @@ export function SettingsView() {
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </SubscriptionGuard>
   );
 }

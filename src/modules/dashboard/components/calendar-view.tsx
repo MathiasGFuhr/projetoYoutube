@@ -7,6 +7,7 @@ import { useVideos } from "@/shared/hooks/use-videos";
 import { useChannels } from "@/shared/hooks/use-channels";
 import { useVideoMutations } from "@/shared/hooks/use-video-mutations";
 import { ProjectModal } from "@/modules/dashboard/components/project-modal";
+import { SubscriptionGuard } from "@/modules/dashboard/components/subscription-guard";
 import type { ProjectFormData } from "@/modules/dashboard/components/project-modal";
 import { toast } from "sonner";
 
@@ -146,7 +147,8 @@ export function CalendarView() {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row h-screen bg-[#0d0d0d]">
+    <SubscriptionGuard>
+      <div className="flex flex-col lg:flex-row h-screen bg-[#0d0d0d]">
 
       {/* ── Calendar ─────────────────────────────────── */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden p-3 sm:p-5">
@@ -428,6 +430,7 @@ export function CalendarView() {
         initialDate={projectDate}
         onSave={handleSaveProject}
       />
-    </div>
+      </div>
+    </SubscriptionGuard>
   );
 }

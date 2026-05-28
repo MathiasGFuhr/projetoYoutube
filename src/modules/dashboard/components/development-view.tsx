@@ -6,6 +6,7 @@ import {
   Lightbulb, Trash2, ChevronRight, Undo2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { SubscriptionGuard } from "@/modules/dashboard/components/subscription-guard";
 
 const CHANNELS: { value: string; label: string; dot: string }[] = [];
 
@@ -280,7 +281,8 @@ export function DevelopmentView() {
   const deleteItem = (id: number) => setItems((p) => p.filter((i) => i.id !== id));
 
   return (
-    <div className="p-4 sm:p-6 min-h-screen">
+    <SubscriptionGuard>
+      <div className="p-4 sm:p-6 min-h-screen">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-5 gap-3 sm:gap-4">
         <div className="flex items-center gap-3">
@@ -374,6 +376,7 @@ export function DevelopmentView() {
           onClose={() => setPicker(false)}
         />
       )}
-    </div>
+      </div>
+    </SubscriptionGuard>
   );
 }

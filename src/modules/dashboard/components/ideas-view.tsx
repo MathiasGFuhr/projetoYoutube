@@ -6,6 +6,7 @@ import {
   Plus, Search, X, Loader2, Trash2, Edit3,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { SubscriptionGuard } from "@/modules/dashboard/components/subscription-guard";
 
 type Status = "ativa" | "em-desenvolvimento" | "usada" | "arquivada";
 
@@ -308,7 +309,8 @@ export function IdeasView() {
   };
 
   return (
-    <div className="p-4 sm:p-6 min-h-screen">
+    <SubscriptionGuard>
+      <div className="p-4 sm:p-6 min-h-screen">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-3 sm:gap-4">
         <div className="flex items-center gap-3">
@@ -388,6 +390,7 @@ export function IdeasView() {
           onClose={closeModal}
         />
       )}
-    </div>
+      </div>
+    </SubscriptionGuard>
   );
 }
