@@ -5,32 +5,21 @@ import { CheckCircle2, Calendar, ExternalLink, Trash2, Search, ChevronDown } fro
 import { cn } from "@/lib/utils";
 import { SubscriptionGuard } from "@/modules/dashboard/components/subscription-guard";
 import { useChannels } from "@/shared/hooks/use-channels";
-
-interface Video {
-  id: number;
-  title: string;
-  channelId: string;
-  date: string;
-  gradFrom: string;
-  gradTo: string;
-  thumbText: string;
-  youtubeUrl: string;
-}
-
-const VIDEOS: Video[] = [];
+import { useVideos } from "@/shared/hooks/use-videos";
+import { useVideoMutations } from "@/shared/hooks/use-video-mutations";
+import { toast } from "sonner";
 
 function VideoCardInner({
   video,
   onDelete,
   channels,
 }: {
-  video: Video;
-  onDelete: (id: number) => void;
+  video: any;
+  onDelete: (id: string) => void;
   channels: { id: string; name: string; color?: string | null }[];
 }) {
-  const ch = channels.find((c) => c.id === video.channelId);
+  const ch = channels.find((c) => c.id === video.channel_id);
   const color = ch?.color ?? "#ef4444";
-
 
   return (
     <div className="flex flex-col rounded-2xl overflow-hidden bg-zinc-900/50 border border-zinc-800/50 hover:border-zinc-700/60 transition-all group">
@@ -39,15 +28,25 @@ function VideoCardInner({
         className="relative w-full overflow-hidden"
         style={{
           height: 168,
-          background: `linear-gradient(145deg, ${video.gradFrom}, ${video.gradTo})`,
+          background: video.thumbnail_url
+            ? undefined
+            : `linear-gradient(145deg, ${color}33, ${color}11)`,
         }}
       >
-        {/* Thumbnail text (mimics YouTube thumbnail typography) */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center p-4 select-none">
-          <p className="text-white/10 text-4xl font-black uppercase text-center leading-none tracking-tight">
-            {video.thumbText}
-          </p>
-        </div>
+        {video.thumbnail_url ? (
+          <img
+            src={video.thumbnail_url}
+            alt={video.title}
+            className="w-full h-full object-cover"
+            loading="lazy"
+          />
+        ) : (
+          <div className="absolute inset-0 flex flex-col items-center justify-center p-4 select-none">
+            <p className="text-white/10 text-4xl font-black uppercase text-center leading-none tracking-tight">
+              {video.title.slice(0, 2).toUpperCase()}
+            </p>
+          </div>
+        )}
         {/* Bottom overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
         {/* PUBLICADO badge */}
@@ -66,18 +65,20 @@ function VideoCardInner({
         </p>
         <div className="flex items-center gap-1.5 mt-0.5">
           <span className="size-1.5 rounded-full flex-shrink-0" style={{ background: color }} />
-          <span className="text-[10px] text-zinc-500 truncate">{ch?.name ?? video.channelId}</span>
+          <span className="text-[10px] text-zinc-500 truncate">{ch?.name ?? video.channel_id}</span>
         </div>
         <div className="flex items-center gap-1.5 text-zinc-600">
           <Calendar className="size-3 flex-shrink-0" />
-          <span className="text-[10px]">{video.date}</span>
+          <span className="text-[10px]">
+            {video.publish_date ? new Date(video.publish_date).toLocaleDateString("pt-BR") : "—"}
+          </span>
         </div>
       </div>
 
       {/* Actions */}
       <div className="px-3.5 py-2.5 border-t border-zinc-800/50 flex items-center justify-between">
         <a
-          href={video.youtubeUrl}
+          href={video.drive_link || "#"}
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center gap-1.5 text-[11px] font-medium text-zinc-400 hover:text-zinc-100 transition-colors"
@@ -98,24 +99,36 @@ function VideoCardInner({
 
 export function PublishedView() {
   const { channels } = useChannels();
-  const [videos, setVideos] = useState<Video[]>(VIDEOS);
+  const { videos, refetch } = useVideos();
+  const { deleteVideo } = useVideoMutations();
   const [selectedChannel, setSelectedChannel] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
 
+  const publishedVideos = useMemo(
+    () => videos.filter((v) => v.status === "Publicado"),
+    [videos]
+  );
+
   const filtered = useMemo(() => {
-    let list = videos;
+    let list = publishedVideos;
     if (selectedChannel !== "all") {
-      list = list.filter((v) => v.channelId === selectedChannel);
+      list = list.filter((v) => v.channel_id === selectedChannel);
     }
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       list = list.filter((v) => v.title.toLowerCase().includes(q));
     }
     return list;
-  }, [videos, selectedChannel, searchQuery]);
+  }, [publishedVideos, selectedChannel, searchQuery]);
 
-  const handleDelete = (id: number) => {
-    setVideos((prev) => prev.filter((v) => v.id !== id));
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteVideo(id);
+      toast.success("Vídeo removido!");
+      refetch();
+    } catch {
+      toast.error("Erro ao remover vídeo.");
+    }
   };
 
   return (
@@ -130,7 +143,7 @@ export function PublishedView() {
           </div>
           <div>
             <h1 className="text-lg sm:text-xl font-black text-zinc-100 leading-none">Vídeos Publicados</h1>
-            <p className="text-[11px] text-zinc-500 mt-0.5">{videos.length} publicados</p>
+            <p className="text-[11px] text-zinc-500 mt-0.5">{publishedVideos.length} publicados</p>
           </div>
         </div>
 
@@ -182,7 +195,7 @@ export function PublishedView() {
       {/* Footer */}
       {filtered.length > 0 && (
         <p className="text-center text-[11px] text-zinc-600 mt-8">
-          Exibindo {filtered.length} de {videos.length} publicados
+          Exibindo {filtered.length} de {publishedVideos.length} publicados
         </p>
       )}
       </div>

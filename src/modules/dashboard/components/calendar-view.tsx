@@ -78,7 +78,7 @@ export function CalendarView() {
     const map: Record<string, typeof videos> = {};
     videos.forEach((v) => {
       const d = v.publish_date;
-      if (d) (map[d] ??= []).push(v);
+      if (d && v.status !== "Publicado") (map[d] ??= []).push(v);
     });
     return map;
   }, [videos]);
@@ -103,7 +103,7 @@ export function CalendarView() {
 
   const upcoming = useMemo(() => {
     return [...videos]
-      .filter((v) => v.publish_date)
+      .filter((v) => v.publish_date && v.status !== "Publicado")
       .sort((a, b) => (a.publish_date ?? "").localeCompare(b.publish_date ?? ""))
       .slice(0, 5);
   }, [videos]);
