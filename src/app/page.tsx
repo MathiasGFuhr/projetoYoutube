@@ -353,9 +353,21 @@ export default function LandingPage() {
               que querem escalar produção com padrão profissional.
             </p>
           </div>
-          <FooterColumn title="Produto" items={["Recursos", "Planos", "Dashboard"]} />
-          <FooterColumn title="Empresa" items={["Sobre", "Comentários", "Contato"]} />
-          <FooterColumn title="Legal" items={["Termos", "Privacidade", "Suporte"]} />
+          <FooterColumn title="Produto" items={[
+            { label: "Recursos", href: "#recursos" },
+            { label: "Planos", href: "#planos" },
+            { label: "Dashboard", href: "/dashboard" },
+          ]} />
+          <FooterColumn title="Empresa" items={[
+            { label: "Sobre", href: "#recursos" },
+            { label: "Comentários", href: "#comentarios" },
+            { label: "Contato", href: "https://wa.me/5555997282539" },
+          ]} />
+          <FooterColumn title="Legal" items={[
+            { label: "Termos", href: "/termos" },
+            { label: "Privacidade", href: "/privacidade" },
+            { label: "Suporte", href: "/dashboard/support" },
+          ]} />
         </div>
         <div className="border-t border-zinc-900/90 py-6 text-center text-xs text-zinc-600">
           © {new Date().getFullYear()} StudioHub. Todos os direitos reservados.
@@ -407,20 +419,48 @@ function HeroMetric({
   );
 }
 
-function FooterColumn({ title, items }: { title: string; items: string[] }) {
+function FooterColumn({ title, items }: { title: string; items: { label: string; href: string }[] }) {
   return (
     <div>
       <h3 className="text-sm font-semibold text-zinc-200">{title}</h3>
       <div className="mt-4 space-y-3">
-        {items.map((item) => (
-          <a
-            key={item}
-            href="#"
-            className="block text-sm text-zinc-500 transition-colors hover:text-zinc-200"
-          >
-            {item}
-          </a>
-        ))}
+        {items.map((item) => {
+          const isExternal = item.href.startsWith("http");
+          const isAnchor = item.href.startsWith("#");
+          if (isAnchor) {
+            return (
+              <SmoothAnchor
+                key={item.label}
+                href={item.href}
+                className="block text-sm text-zinc-500 transition-colors hover:text-zinc-200"
+              >
+                {item.label}
+              </SmoothAnchor>
+            );
+          }
+          if (isExternal) {
+            return (
+              <a
+                key={item.label}
+                href={item.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block text-sm text-zinc-500 transition-colors hover:text-zinc-200"
+              >
+                {item.label}
+              </a>
+            );
+          }
+          return (
+            <Link
+              key={item.label}
+              href={item.href}
+              className="block text-sm text-zinc-500 transition-colors hover:text-zinc-200"
+            >
+              {item.label}
+            </Link>
+          );
+        })}
       </div>
     </div>
   );
