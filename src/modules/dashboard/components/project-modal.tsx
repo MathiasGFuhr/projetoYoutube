@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import {
-  X, Upload, Link2, Copy, Check, Folder, Tag, Plus, Trash2, Loader2,
+  X, Upload, Link2, Copy, Check, Folder, Tag, Plus, Trash2, Loader2, Pencil,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useChannels } from "@/shared/hooks/use-channels";
@@ -20,6 +20,8 @@ interface ProjectModalProps {
   onClose: () => void;
   onSave?: (data: ProjectFormData) => Promise<void> | void;
   initialDate?: string;
+  initialData?: Partial<ProjectFormData>;
+  videoId?: string;
 }
 
 export interface ProjectFormData {
@@ -39,18 +41,19 @@ const INPUT = "w-full bg-zinc-900/80 border border-zinc-800/70 rounded-xl px-4 p
 
 const LABEL = "text-[9px] font-bold uppercase tracking-[0.18em] text-zinc-500 block mb-2";
 
-export function ProjectModal({ open, onClose, onSave, initialDate }: ProjectModalProps) {
+export function ProjectModal({ open, onClose, onSave, initialDate, initialData, videoId }: ProjectModalProps) {
+  const isEdit = Boolean(videoId);
   const [form, setForm] = useState<ProjectFormData>({
-    title: "",
-    channelId: "",
-    stage: "Pronto",
-    publishDate: initialDate || new Date().toISOString().split("T")[0],
-    driveLink: "",
-    localPath: "",
-    tags: [],
-    thumbnail: "",
-    description: "",
-    notes: "",
+    title: initialData?.title ?? "",
+    channelId: initialData?.channelId ?? "",
+    stage: initialData?.stage ?? "Pronto",
+    publishDate: initialData?.publishDate ?? initialDate ?? new Date().toISOString().split("T")[0],
+    driveLink: initialData?.driveLink ?? "",
+    localPath: initialData?.localPath ?? "",
+    tags: initialData?.tags ?? [],
+    thumbnail: initialData?.thumbnail ?? "",
+    description: initialData?.description ?? "",
+    notes: initialData?.notes ?? "",
   });
 
   const [tagInput, setTagInput] = useState("");
@@ -61,12 +64,23 @@ export function ProjectModal({ open, onClose, onSave, initialDate }: ProjectModa
   const { channels, refetch } = useChannels();
   const { createChannel } = useChannelMutations();
 
-  // Reset date when modal opens with a new initialDate
+  // Reset form when modal opens with new initialData or initialDate
   useEffect(() => {
-    if (open && initialDate) {
-      set("publishDate", initialDate);
+    if (open) {
+      setForm({
+        title: initialData?.title ?? "",
+        channelId: initialData?.channelId ?? "",
+        stage: initialData?.stage ?? "Pronto",
+        publishDate: initialData?.publishDate ?? initialDate ?? new Date().toISOString().split("T")[0],
+        driveLink: initialData?.driveLink ?? "",
+        localPath: initialData?.localPath ?? "",
+        tags: initialData?.tags ?? [],
+        thumbnail: initialData?.thumbnail ?? "",
+        description: initialData?.description ?? "",
+        notes: initialData?.notes ?? "",
+      });
     }
-  }, [open, initialDate]);
+  }, [open, initialDate, initialData]);
 
   const handleSave = async () => {
     if (!onSave || !form.title.trim()) return;
@@ -119,7 +133,7 @@ export function ProjectModal({ open, onClose, onSave, initialDate }: ProjectModa
         <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800/60">
           <div>
             <p className="text-[9px] font-black uppercase tracking-[0.22em] text-red-500 mb-1">Ficha Técnica do Vídeo</p>
-            <h2 className="text-[15px] font-black uppercase tracking-widest text-zinc-100">Criar Nova Produção</h2>
+            <h2 className="text-[15px] font-black uppercase tracking-widest text-zinc-100">{isEdit ? "Editar Produção" : "Criar Nova Produção"}</h2>
           </div>
           <button onClick={onClose} className="text-zinc-500 hover:text-zinc-200 transition-colors p-1">
             <X className="size-5" />
@@ -334,12 +348,12 @@ export function ProjectModal({ open, onClose, onSave, initialDate }: ProjectModa
             {isSaving ? (
               <>
                 <Loader2 className="size-3.5 animate-spin" />
-                Criando vídeo...
+                {isEdit ? "Salvando..." : "Criando vídeo..."}
               </>
             ) : (
               <>
-                <Upload className="size-3.5" />
-                Criar Vídeo
+                {isEdit ? <Pencil className="size-3.5" /> : <Upload className="size-3.5" />}
+                {isEdit ? "Salvar Alterações" : "Criar Vídeo"}
               </>
             )}
           </button>

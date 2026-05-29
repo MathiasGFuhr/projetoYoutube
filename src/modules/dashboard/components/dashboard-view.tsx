@@ -15,6 +15,7 @@ import {
   Scissors,
   Send,
   Clock,
+  Pencil,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ChannelModal } from "@/modules/dashboard/components/channels-view";
@@ -83,10 +84,11 @@ export function DashboardView({ displayName }: { displayName: string }) {
   const [selectedChannel, setSelectedChannel] = useState("all");
   const [showChannelModal, setShowChannelModal] = useState(false);
   const [showProjectModal, setShowProjectModal] = useState(false);
+  const [editingVideo, setEditingVideo] = useState<typeof videos[0] | null>(null);
   const { channels } = useChannels();
   const { createChannel } = useChannelMutations();
   const { videos, refetch: refetchVideos } = useVideos();
-  const { createVideo } = useVideoMutations();
+  const { createVideo, updateVideo } = useVideoMutations();
 
   const firstName = displayName.split(" ")[0];
 
@@ -266,10 +268,19 @@ export function DashboardView({ displayName }: { displayName: string }) {
                       <span className={cn("text-[10px] font-semibold px-2 py-0.5 rounded-lg border flex-shrink-0", STATUS_STYLES[status] ?? STATUS_STYLES["Pronto"])}>
                         {v.status ?? "Pronto"}
                       </span>
-                      {/* Action */}
-                      <button className="flex-shrink-0 flex items-center justify-center size-6 rounded-lg text-zinc-600 hover:text-zinc-300 hover:bg-zinc-700/60 transition-all opacity-0 group-hover:opacity-100">
-                        <ArrowRight className="size-3" />
-                      </button>
+                      {/* Actions */}
+                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setEditingVideo(v); setShowProjectModal(true); }}
+                          className="flex items-center justify-center size-6 rounded-lg text-zinc-600 hover:text-zinc-300 hover:bg-zinc-700/60 transition-all"
+                          title="Editar"
+                        >
+                          <Pencil className="size-3" />
+                        </button>
+                        <button className="flex items-center justify-center size-6 rounded-lg text-zinc-600 hover:text-zinc-300 hover:bg-zinc-700/60 transition-all">
+                          <ArrowRight className="size-3" />
+                        </button>
+                      </div>
                     </div>
                   );
                 })
@@ -360,28 +371,58 @@ export function DashboardView({ displayName }: { displayName: string }) {
       {/* Project Modal */}
       <ProjectModal
         open={showProjectModal}
-        onClose={() => setShowProjectModal(false)}
+        onClose={() => { setShowProjectModal(false); setEditingVideo(null); }}
+        videoId={editingVideo?.id}
+        initialData={editingVideo ? {
+          title: editingVideo.title,
+          channelId: editingVideo.channel_id,
+          stage: editingVideo.status ?? "Pronto",
+          publishDate: editingVideo.publish_date ? new Date(editingVideo.publish_date).toISOString().split("T")[0] : new Date().toISOString().split("T")[0],
+          driveLink: editingVideo.drive_link ?? "",
+          localPath: editingVideo.local_path ?? "",
+          tags: (editingVideo.tags as string[]) ?? [],
+          thumbnail: editingVideo.thumbnail_url ?? "",
+          description: editingVideo.description ?? "",
+          notes: editingVideo.notes ?? "",
+        } : undefined}
         onSave={async (data) => {
           try {
-            await createVideo({
-              title: data.title,
-              channel_id: data.channelId,
-              status: data.stage as any,
-              publish_date: data.publishDate || null,
-              drive_link: data.driveLink || null,
-              local_path: data.localPath || null,
-              tags: data.tags,
-              thumbnail_url: data.thumbnail || null,
-              description: data.description || null,
-              notes: data.notes || null,
-              priority: "media",
-              video_type: "Vídeo Standard",
-            });
-            toast.success("Vídeo criado com sucesso!");
+            if (editingVideo) {
+              await updateVideo(editingVideo.id, {
+                title: data.title,
+                channel_id: data.channelId,
+                status: data.stage as any,
+                publish_date: data.publishDate || null,
+                drive_link: data.driveLink || null,
+                local_path: data.localPath || null,
+                tags: data.tags,
+                thumbnail_url: data.thumbnail || null,
+                description: data.description || null,
+                notes: data.notes || null,
+              });
+              toast.success("Vídeo atualizado!");
+              setEditingVideo(null);
+            } else {
+              await createVideo({
+                title: data.title,
+                channel_id: data.channelId,
+                status: data.stage as any,
+                publish_date: data.publishDate || null,
+                drive_link: data.driveLink || null,
+                local_path: data.localPath || null,
+                tags: data.tags,
+                thumbnail_url: data.thumbnail || null,
+                description: data.description || null,
+                notes: data.notes || null,
+                priority: "media",
+                video_type: "Vídeo Standard",
+              });
+              toast.success("Vídeo criado com sucesso!");
+            }
             refetchVideos();
           } catch (err) {
-            console.error("[Dashboard] create video failed:", err);
-            toast.error("Erro ao criar vídeo. Tente novamente.");
+            console.error("[Dashboard] save video failed:", err);
+            toast.error(editingVideo ? "Erro ao atualizar vídeo." : "Erro ao criar vídeo. Tente novamente.");
           }
         }}
       />
