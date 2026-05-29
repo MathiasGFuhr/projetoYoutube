@@ -123,6 +123,11 @@ export function CalendarView() {
     setShowProjectModal(true);
   };
 
+  const openEditModal = (video: typeof videos[0]) => {
+    setEditingVideo(video);
+    setShowProjectModal(true);
+  };
+
   const handleSaveProject = async (data: ProjectFormData) => {
     try {
       if (editingVideo) {
@@ -308,7 +313,7 @@ export function CalendarView() {
               upcoming.map((video, i) => {
                 const ch = channels.find((c) => c.id === video.channel_id);
                 return (
-                  <div key={video.id}>
+                  <div key={video.id} onClick={() => openEditModal(video)} className="cursor-pointer hover:bg-zinc-800/20 -m-1 p-1 rounded-xl transition-colors">
                     <div className="flex items-center justify-between gap-2 mb-1">
                       <span
                         className="text-[8px] font-black px-2 py-0.5 rounded flex-shrink-0 text-white"
@@ -391,7 +396,8 @@ export function CalendarView() {
                     return (
                       <div
                         key={v.id}
-                        className="group flex items-center gap-3 p-3 rounded-xl bg-zinc-900/50 border border-zinc-800/50"
+                        onClick={() => openEditModal(v)}
+                        className="group flex items-center gap-3 p-3 rounded-xl bg-zinc-900/50 border border-zinc-800/50 cursor-pointer hover:bg-zinc-800/70 transition-colors"
                       >
                         {v.thumbnail_url ? (
                           <img
