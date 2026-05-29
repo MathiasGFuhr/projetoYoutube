@@ -14,6 +14,7 @@ import {
   Loader2,
   Database,
   CreditCard,
+  Headphones,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/shared/hooks/use-auth";
@@ -46,6 +47,7 @@ function useNavItems() {
 const BOTTOM_ITEMS: NavItem[] = [
   { label: "Planos", icon: CreditCard, href: "/dashboard/billing" },
   { label: "Configurações", icon: Settings, href: "/dashboard/settings" },
+  { label: "Suporte", icon: Headphones, href: "/dashboard/support" },
 ];
 
 export function DashboardSidebar({ onNavigate }: { onNavigate?: () => void }) {
