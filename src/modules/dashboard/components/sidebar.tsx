@@ -65,7 +65,7 @@ export function DashboardSidebar({ onNavigate }: { onNavigate?: () => void }) {
   const avatarUrl = user?.user_metadata?.avatar_url as string | undefined;
 
   return (
-    <aside className="flex h-full w-[236px] flex-shrink-0 select-none flex-col border-r border-zinc-800/70 bg-[#080808]/95 shadow-[22px_0_80px_rgba(0,0,0,0.32)] backdrop-blur-2xl">
+    <aside id="sidebar" className="flex h-full w-[236px] flex-shrink-0 select-none flex-col border-r border-zinc-800/70 bg-[#080808]/95 shadow-[22px_0_80px_rgba(0,0,0,0.32)] backdrop-blur-2xl">
 
       {/* Logo */}
       <div className="border-b border-zinc-800/60 px-4 pb-4 pt-5">
@@ -89,18 +89,19 @@ export function DashboardSidebar({ onNavigate }: { onNavigate?: () => void }) {
       </div>
 
       {/* Nav */}
-      <nav className="custom-scrollbar flex-1 overflow-y-auto px-2.5 py-4">
+      <nav id="sidebar-nav" className="custom-scrollbar flex-1 overflow-y-auto px-2.5 py-4">
         <p className="mb-2 px-2 text-[10px] font-black uppercase tracking-[0.18em] text-zinc-600">
           Menu
         </p>
         <div className="space-y-0.5">
-          {NAV_ITEMS.map((item) => {
+          {NAV_ITEMS.map((item, index) => {
             const Icon = item.icon;
             const isActive =
               pathname === item.href ||
               (item.href !== "/dashboard" && pathname.startsWith(item.href));
             return (
               <Link
+                id={`nav-${index}`}
                 key={item.href}
                 href={item.href}
                 className={cn(
@@ -134,7 +135,7 @@ export function DashboardSidebar({ onNavigate }: { onNavigate?: () => void }) {
       </nav>
 
       {/* Bottom nav — Configurações */}
-      <div className="space-y-0.5 px-2.5 pt-3 pb-1">
+      <div id="sidebar-preferences" className="space-y-0.5 px-2.5 pt-3 pb-1">
         <p className="mb-1 px-2 text-[10px] font-black uppercase tracking-[0.18em] text-zinc-600">
           Preferências
         </p>
@@ -169,7 +170,7 @@ export function DashboardSidebar({ onNavigate }: { onNavigate?: () => void }) {
       </div>
 
       {/* User profile */}
-      <div className="space-y-2 border-t border-zinc-800/60 p-3">
+      <div id="sidebar-user" className="space-y-2 border-t border-zinc-800/60 p-3">
         <Link href="/dashboard/settings" onClick={onNavigate} className="flex items-center gap-2.5 rounded-xl px-2 py-2 transition-colors hover:bg-zinc-900/80">
           {avatarUrl ? (
             <img

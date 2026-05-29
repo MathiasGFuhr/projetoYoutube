@@ -3,6 +3,7 @@ import { createSupabaseServerClient } from "@/core/lib/supabase/server";
 import { DashboardSidebar } from "@/modules/dashboard/components/sidebar";
 import { MobileSidebarShell } from "@/modules/dashboard/components/mobile-sidebar-shell";
 import { AutoRefreshOnFirstVisit } from "@/shared/components/auto-refresh";
+import { OnboardingTour } from "@/shared/components/onboarding-tour";
 
 export default async function DashboardLayout({
   children,
@@ -21,6 +22,7 @@ export default async function DashboardLayout({
   return (
     <div className="flex h-screen overflow-hidden bg-[#050505] text-zinc-100">
       <AutoRefreshOnFirstVisit />
+      <OnboardingTour />
       <div className="hidden lg:block">
         <DashboardSidebar />
       </div>
