@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useCallback } from "react";
-import { ChevronLeft, ChevronRight, Flame, Plus, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Flame, Plus, X, Pencil } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useVideos } from "@/shared/hooks/use-videos";
 import { useChannels } from "@/shared/hooks/use-channels";
@@ -65,11 +65,12 @@ export function CalendarView() {
 
   const { videos, refetch: refetchVideos } = useVideos();
   const { channels } = useChannels();
-  const { createVideo } = useVideoMutations();
+  const { createVideo, updateVideo } = useVideoMutations();
 
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
   const [showProjectModal, setShowProjectModal] = useState(false);
   const [projectDate, setProjectDate] = useState<string>("");
+  const [editingVideo, setEditingVideo] = useState<typeof videos[0] | null>(null);
 
   const calDays = useMemo(() => getCalendarDays(year, month), [year, month]);
 
@@ -116,6 +117,7 @@ export function CalendarView() {
   };
 
   const handleCreateProject = () => {
+    setEditingVideo(null);
     setSelectedDay(null);
     setProjectDate(selectedDay ?? "");
     setShowProjectModal(true);
@@ -123,26 +125,43 @@ export function CalendarView() {
 
   const handleSaveProject = async (data: ProjectFormData) => {
     try {
-      await createVideo({
-        title: data.title,
-        channel_id: data.channelId,
-        status: data.stage as any,
-        publish_date: data.publishDate || null,
-        drive_link: data.driveLink || null,
-        local_path: data.localPath || null,
-        tags: data.tags,
-        thumbnail_url: data.thumbnail || null,
-        description: data.description || null,
-        notes: data.notes || null,
-        priority: "media",
-        video_type: "Vídeo Standard",
-      });
-      toast.success("Vídeo criado com sucesso!");
+      if (editingVideo) {
+        await updateVideo(editingVideo.id, {
+          title: data.title,
+          channel_id: data.channelId,
+          status: data.stage as any,
+          publish_date: data.publishDate || null,
+          drive_link: data.driveLink || null,
+          local_path: data.localPath || null,
+          tags: data.tags,
+          thumbnail_url: data.thumbnail || null,
+          description: data.description || null,
+          notes: data.notes || null,
+        });
+        toast.success("Vídeo atualizado!");
+        setEditingVideo(null);
+      } else {
+        await createVideo({
+          title: data.title,
+          channel_id: data.channelId,
+          status: data.stage as any,
+          publish_date: data.publishDate || null,
+          drive_link: data.driveLink || null,
+          local_path: data.localPath || null,
+          tags: data.tags,
+          thumbnail_url: data.thumbnail || null,
+          description: data.description || null,
+          notes: data.notes || null,
+          priority: "media",
+          video_type: "Vídeo Standard",
+        });
+        toast.success("Vídeo criado com sucesso!");
+      }
       refetchVideos();
       setShowProjectModal(false);
     } catch (err) {
-      console.error("[Calendar] create video failed:", err);
-      toast.error("Erro ao criar vídeo. Tente novamente.");
+      console.error("[Calendar] save video failed:", err);
+      toast.error(editingVideo ? "Erro ao atualizar vídeo." : "Erro ao criar vídeo. Tente novamente.");
     }
   };
 
@@ -372,7 +391,7 @@ export function CalendarView() {
                     return (
                       <div
                         key={v.id}
-                        className="flex items-center gap-3 p-3 rounded-xl bg-zinc-900/50 border border-zinc-800/50"
+                        className="group flex items-center gap-3 p-3 rounded-xl bg-zinc-900/50 border border-zinc-800/50"
                       >
                         {v.thumbnail_url ? (
                           <img
@@ -396,6 +415,13 @@ export function CalendarView() {
                         <span className="text-[10px] font-semibold text-zinc-400 flex-shrink-0">
                           {v.status ?? "Pronto"}
                         </span>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setEditingVideo(v); setShowProjectModal(true); }}
+                          className="opacity-0 group-hover:opacity-100 flex items-center justify-center size-6 rounded-lg text-zinc-600 hover:text-zinc-300 hover:bg-zinc-700/60 transition-all"
+                          title="Editar"
+                        >
+                          <Pencil className="size-3" />
+                        </button>
                       </div>
                     );
                   })}
@@ -426,8 +452,21 @@ export function CalendarView() {
       {/* ── Project Modal ──────────────────────────────── */}
       <ProjectModal
         open={showProjectModal}
-        onClose={() => setShowProjectModal(false)}
+        onClose={() => { setShowProjectModal(false); setEditingVideo(null); }}
+        videoId={editingVideo?.id}
         initialDate={projectDate}
+        initialData={editingVideo ? {
+          title: editingVideo.title,
+          channelId: editingVideo.channel_id,
+          stage: editingVideo.status ?? "Pronto",
+          publishDate: editingVideo.publish_date ? new Date(editingVideo.publish_date).toISOString().split("T")[0] : new Date().toISOString().split("T")[0],
+          driveLink: editingVideo.drive_link ?? "",
+          localPath: editingVideo.local_path ?? "",
+          tags: (editingVideo.tags as string[]) ?? [],
+          thumbnail: editingVideo.thumbnail_url ?? "",
+          description: editingVideo.description ?? "",
+          notes: editingVideo.notes ?? "",
+        } : undefined}
         onSave={handleSaveProject}
       />
       </div>
