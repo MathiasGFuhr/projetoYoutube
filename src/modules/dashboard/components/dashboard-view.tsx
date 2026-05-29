@@ -233,7 +233,8 @@ export function DashboardView({ displayName }: { displayName: string }) {
                   return (
                     <div
                       key={v.id}
-                      className="group flex items-center gap-3.5 px-5 py-3 hover:bg-zinc-800/20 transition-colors"
+                      onClick={() => { setEditingVideo(v); setShowProjectModal(true); }}
+                      className="group flex items-center gap-3.5 px-5 py-3 hover:bg-zinc-800/20 transition-colors cursor-pointer"
                     >
                       {/* Thumbnail */}
                       {v.thumbnail_url ? (
