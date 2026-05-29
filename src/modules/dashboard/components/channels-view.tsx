@@ -350,7 +350,7 @@ export function ChannelModal({
               className={cn(INPUT, "resize-none h-24")}
               value={form.niche ?? ""}
               onChange={(e) => set("niche", e.target.value)}
-              placeholder="Ex: Canal focado em review de softwares e novidades de inteligência artificial..."
+              placeholder="Ex: Canal focado em review de softwares e novidades de tecnologia..."
             />
           </div>
         </div>

@@ -48,7 +48,7 @@ export default function AuthPage() {
             <div className="relative grid grid-cols-3 gap-3">
               <Metric icon={<PlaySquare className="size-4" />} value="Multi" label="Canais" />
               <Metric icon={<CalendarCheck className="size-4" />} value="Zero" label="Colisões" />
-              <Metric icon={<Film className="size-4" />} value="IA" label="Ideias" />
+              <Metric icon={<Film className="size-4" />} value="100+" label="Ideias" />
             </div>
           </aside>
 
