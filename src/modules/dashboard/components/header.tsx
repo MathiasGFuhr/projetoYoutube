@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { Bell, ChevronDown, Loader2, User, LogOut, Search, Calendar } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { useAuth } from "@/shared/hooks/use-auth";
 import { useSignOut } from "@/modules/auth/hooks/use-sign-out";
 
@@ -27,6 +28,90 @@ function Clock() {
       <span className="text-[11px] text-zinc-500 font-medium">{dateStr}</span>
       <span className="text-[11px] text-zinc-600">·</span>
       <span className="text-[11px] text-zinc-400 font-mono tabular-nums">{timeStr}</span>
+    </div>
+  );
+}
+
+function NotificationBell() {
+  const [open, setOpen] = useState(false);
+  const [hasUnread, setHasUnread] = useState(true);
+
+  const notifications = [
+    {
+      id: 1,
+      title: "Nova funcionalidade disponível",
+      body: "Agora você pode editar vídeos diretamente clicando nos cards.",
+      date: "Hoje",
+      read: false,
+    },
+    {
+      id: 2,
+      title: "Atualização do sistema",
+      body: "Os vídeos publicados agora aparecem automaticamente na página Publicados.",
+      date: "Hoje",
+      read: false,
+    },
+  ];
+
+  const unreadCount = notifications.filter((n) => !n.read).length;
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="relative flex items-center justify-center size-8 rounded-lg text-zinc-500 hover:text-zinc-300 bg-zinc-900/60 hover:bg-zinc-800/80 border border-zinc-800/60 transition-all duration-150"
+        aria-label="Notificações"
+      >
+        <Bell className="size-3.5" />
+        {unreadCount > 0 && (
+          <span className="absolute top-1 right-1 size-1.5 rounded-full bg-red-500 ring-1 ring-[#080808]" />
+        )}
+      </button>
+
+      {open && (
+        <>
+          <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
+          <div className="absolute right-0 mt-2 w-80 z-20 bg-zinc-950 border border-zinc-800/80 rounded-xl shadow-2xl shadow-black/60 overflow-hidden">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800/60">
+              <p className="text-xs font-semibold text-zinc-200">Atualizações do sistema</p>
+              {unreadCount > 0 && (
+                <button
+                  onClick={() => setHasUnread(false)}
+                  className="text-[10px] text-zinc-500 hover:text-zinc-300 transition-colors"
+                >
+                  Marcar todas como lidas
+                </button>
+              )}
+            </div>
+            <div className="max-h-72 overflow-y-auto">
+              {notifications.length === 0 ? (
+                <div className="px-4 py-6 text-center">
+                  <p className="text-xs text-zinc-600">Nenhuma atualização no momento</p>
+                </div>
+              ) : (
+                notifications.map((n) => (
+                  <div
+                    key={n.id}
+                    className={cn(
+                      "px-4 py-3 border-b border-zinc-800/40 transition-colors",
+                      n.read || !hasUnread ? "opacity-60" : "bg-zinc-900/30 hover:bg-zinc-900/50"
+                    )}
+                  >
+                    <div className="flex items-start gap-2.5">
+                      <span className="mt-1 size-1.5 rounded-full bg-red-500 flex-shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[11px] font-semibold text-zinc-200 leading-snug">{n.title}</p>
+                        <p className="text-[10px] text-zinc-500 mt-0.5 leading-snug">{n.body}</p>
+                        <p className="text-[9px] text-zinc-700 mt-1">{n.date}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
@@ -78,13 +163,7 @@ export function DashboardHeader() {
 
       {/* Actions */}
       <div className="flex items-center gap-2.5 flex-shrink-0">
-        <button
-          className="relative flex items-center justify-center size-8 rounded-lg text-zinc-500 hover:text-zinc-300 bg-zinc-900/60 hover:bg-zinc-800/80 border border-zinc-800/60 transition-all duration-150"
-          aria-label="Notificações"
-        >
-          <Bell className="size-3.5" />
-          <span className="absolute top-1 right-1 size-1.5 rounded-full bg-red-500 ring-1 ring-[#080808]" />
-        </button>
+        <NotificationBell />
 
         <div className="relative">
           <button
