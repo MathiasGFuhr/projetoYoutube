@@ -4,10 +4,12 @@ import { useState } from "react";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 import { useAuth } from "@/shared/hooks/use-auth";
 import type { TablesInsert, TablesUpdate } from "@/lib/supabase/database.types";
+import { useDataCache } from "@/shared/providers/data-cache-provider";
 
 export function useVideoMutations() {
   const { user } = useAuth();
   const supabase = getSupabaseBrowserClient();
+  const cache = useDataCache();
   const [isPending, setIsPending] = useState(false);
 
   const createVideo = async (data: Omit<TablesInsert<"videos">, "user_id">) => {
@@ -20,6 +22,7 @@ export function useVideoMutations() {
         .select()
         .single();
       if (error) throw error;
+      cache.setVideos([result, ...cache.videos.filter((video) => video.id !== result.id)]);
       return result;
     } finally {
       setIsPending(false);
@@ -36,6 +39,7 @@ export function useVideoMutations() {
         .select()
         .single();
       if (error) throw error;
+      cache.setVideos(cache.videos.map((video) => video.id === id ? result : video));
       return result;
     } finally {
       setIsPending(false);
@@ -47,6 +51,7 @@ export function useVideoMutations() {
     try {
       const { error } = await supabase.from("videos").delete().eq("id", id);
       if (error) throw error;
+      cache.setVideos(cache.videos.filter((video) => video.id !== id));
     } finally {
       setIsPending(false);
     }

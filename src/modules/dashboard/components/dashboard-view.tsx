@@ -422,7 +422,7 @@ export function DashboardView({ displayName }: { displayName: string }) {
               });
               toast.success("Vídeo criado com sucesso!");
             }
-            refetchVideos();
+            await refetchVideos();
           } catch (err) {
             console.error("[Dashboard] save video failed:", err);
             toast.error(editingVideo ? "Erro ao atualizar vídeo." : "Erro ao criar vídeo. Tente novamente.");

@@ -23,8 +23,8 @@ export function useVideos() {
   const videos = cache.videos;
   const isLoading = localLoading || (videos.length === 0 && isCacheStale(cache.lastFetch.videos));
 
-  const load = useCallback(async (attempt = 1) => {
-    if (!isCacheStale(cache.lastFetch.videos)) {
+  const load = useCallback(async (attempt = 1, force = false) => {
+    if (!force && !isCacheStale(cache.lastFetch.videos)) {
       setLocalLoading(false);
       return;
     }
@@ -48,7 +48,7 @@ export function useVideos() {
         const delay = attempt * 1500;
         console.log(`[useVideos] retrying in ${delay}ms...`);
         await sleep(delay);
-        return load(attempt + 1);
+        return load(attempt + 1, force);
       }
       toast.error("Erro ao carregar vídeos. Tente recarregar a página.");
     } finally {
@@ -62,5 +62,7 @@ export function useVideos() {
     return () => { isMounted.current = false; };
   }, [load]);
 
-  return { videos, isLoading, refetch: load };
+  const refetch = useCallback(() => load(1, true), [load]);
+
+  return { videos, isLoading, refetch };
 }
