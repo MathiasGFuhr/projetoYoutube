@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import { useVideos } from "@/shared/hooks/use-videos";
 import { useChannels } from "@/shared/hooks/use-channels";
 import { useVideoMutations } from "@/shared/hooks/use-video-mutations";
-import { ProjectModal } from "@/modules/dashboard/components/project-modal";
+import { ProjectModal, normalizeVideoType } from "@/modules/dashboard/components/project-modal";
 import { SubscriptionGuard } from "@/modules/dashboard/components/subscription-guard";
 import type { ProjectFormData } from "@/modules/dashboard/components/project-modal";
 import { toast } from "sonner";
@@ -17,6 +17,21 @@ const MONTH_NAMES = [
 ];
 
 const DAY_HEADERS = ["DOM","SEG","TER","QUA","QUI","SEX","SÁB"];
+
+const VIDEO_TYPE_STYLES: Record<string, { label: string; className: string }> = {
+  Shorts: {
+    label: "SHORT",
+    className: "border-violet-500/25 bg-violet-500/15 text-violet-300",
+  },
+  "Vídeo Standard": {
+    label: "VÍDEO",
+    className: "border-sky-500/25 bg-sky-500/15 text-sky-300",
+  },
+};
+
+function getVideoTypeBadge(videoType?: string | null) {
+  return VIDEO_TYPE_STYLES[normalizeVideoType(videoType)];
+}
 
 function pad2(n: number) { return String(n).padStart(2, "0"); }
 
@@ -134,6 +149,7 @@ export function CalendarView() {
         await updateVideo(editingVideo.id, {
           title: data.title,
           channel_id: data.channelId,
+          video_type: data.videoType,
           status: data.stage as any,
           publish_date: data.publishDate || null,
           drive_link: data.driveLink || null,
@@ -158,7 +174,7 @@ export function CalendarView() {
           description: data.description || null,
           notes: data.notes || null,
           priority: "media",
-          video_type: "Vídeo Standard",
+          video_type: data.videoType,
         });
         toast.success("Vídeo criado com sucesso!");
       }
@@ -265,12 +281,16 @@ export function CalendarView() {
                     <div className="hidden sm:flex flex-col gap-[3px]">
                       {vids.slice(0, SHOW).map((v) => {
                         const ch = channels.find((c) => c.id === v.channel_id);
+                        const typeBadge = getVideoTypeBadge(v.video_type);
                         return (
                           <div
                             key={v.id}
                             title={`${ch?.name ?? "Canal"} — ${v.title}`}
                             className="flex items-center gap-1.5 px-2 py-[5px] rounded-lg overflow-hidden bg-zinc-800/60 text-zinc-300"
                           >
+                            <span className={cn("text-[7px] font-black px-1 py-0.5 rounded border leading-none flex-shrink-0", typeBadge.className)}>
+                              {typeBadge.label}
+                            </span>
                             <span
                               className="size-1.5 rounded-full flex-shrink-0"
                               style={{ backgroundColor: ch?.color ?? "#ef4444" }}
@@ -312,15 +332,21 @@ export function CalendarView() {
             ) : (
               upcoming.map((video, i) => {
                 const ch = channels.find((c) => c.id === video.channel_id);
+                const typeBadge = getVideoTypeBadge(video.video_type);
                 return (
                   <div key={video.id} onClick={() => openEditModal(video)} className="cursor-pointer hover:bg-zinc-800/20 -m-1 p-1 rounded-xl transition-colors">
                     <div className="flex items-center justify-between gap-2 mb-1">
-                      <span
-                        className="text-[8px] font-black px-2 py-0.5 rounded flex-shrink-0 text-white"
-                        style={{ backgroundColor: ch?.color ?? "#ef4444" }}
-                      >
-                        {ch?.name ?? "CANAL"}
-                      </span>
+                      <div className="flex items-center gap-1 min-w-0">
+                        <span className={cn("text-[8px] font-black px-1.5 py-0.5 rounded border leading-none flex-shrink-0", typeBadge.className)}>
+                          {typeBadge.label}
+                        </span>
+                        <span
+                          className="text-[8px] font-black px-2 py-0.5 rounded flex-shrink truncate text-white"
+                          style={{ backgroundColor: ch?.color ?? "#ef4444" }}
+                        >
+                          {ch?.name ?? "CANAL"}
+                        </span>
+                      </div>
                       <span className="text-[9px] text-zinc-500 flex-shrink-0 tabular-nums">
                         {video.publish_date ? formatDisplay(video.publish_date) : "—"}
                       </span>
@@ -331,7 +357,6 @@ export function CalendarView() {
                     <p className="text-[9px] text-zinc-600 uppercase tracking-wide">
                       STATUS:{" "}
                       <span className="text-zinc-400">{video.status ?? "Pronto"}</span>
-                      {" | "}STANDARD
                     </p>
                     {i < upcoming.length - 1 && (
                       <div className="mt-3 border-b border-zinc-800/40" />
@@ -393,6 +418,7 @@ export function CalendarView() {
                 <div className="space-y-3">
                   {dayVideos.map((v) => {
                     const ch = channels.find((c) => c.id === v.channel_id);
+                    const typeBadge = getVideoTypeBadge(v.video_type);
                     return (
                       <div
                         key={v.id}
@@ -418,6 +444,9 @@ export function CalendarView() {
                           </p>
                           <p className="text-[10px] text-zinc-500">{ch?.name ?? v.channel_id}</p>
                         </div>
+                        <span className={cn("text-[8px] font-black px-1.5 py-0.5 rounded-md border leading-none flex-shrink-0", typeBadge.className)}>
+                          {typeBadge.label}
+                        </span>
                         <span className="text-[10px] font-semibold text-zinc-400 flex-shrink-0">
                           {v.status ?? "Pronto"}
                         </span>
@@ -464,6 +493,7 @@ export function CalendarView() {
         initialData={editingVideo ? {
           title: editingVideo.title,
           channelId: editingVideo.channel_id,
+          videoType: normalizeVideoType(editingVideo.video_type),
           stage: editingVideo.status ?? "Pronto",
           publishDate: editingVideo.publish_date ? new Date(editingVideo.publish_date).toISOString().split("T")[0] : new Date().toISOString().split("T")[0],
           driveLink: editingVideo.drive_link ?? "",

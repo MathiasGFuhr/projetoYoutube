@@ -15,6 +15,19 @@ const STAGES = [
   "Pronto", "Agendado", "Publicado",
 ];
 
+const VIDEO_TYPES = [
+  { value: "Vídeo Standard", label: "Vídeo Longo" },
+  { value: "Shorts", label: "Short" },
+];
+
+export function normalizeVideoType(value?: string | null): ProjectFormData["videoType"] {
+  if (value === "Short" || value === "Shorts") return "Shorts";
+  if (value === "Live") return "Live";
+  if (value === "Documentário") return "Documentário";
+  if (value === "Tutorial") return "Tutorial";
+  return "Vídeo Standard";
+}
+
 interface ProjectModalProps {
   open: boolean;
   onClose: () => void;
@@ -27,6 +40,7 @@ interface ProjectModalProps {
 export interface ProjectFormData {
   title: string;
   channelId: string;
+  videoType: "Vídeo Standard" | "Shorts" | "Live" | "Documentário" | "Tutorial";
   stage: string;
   publishDate: string;
   driveLink: string;
@@ -46,6 +60,7 @@ export function ProjectModal({ open, onClose, onSave, initialDate, initialData, 
   const [form, setForm] = useState<ProjectFormData>({
     title: initialData?.title ?? "",
     channelId: initialData?.channelId ?? "",
+    videoType: normalizeVideoType(initialData?.videoType),
     stage: initialData?.stage ?? "Pronto",
     publishDate: initialData?.publishDate ?? initialDate ?? new Date().toISOString().split("T")[0],
     driveLink: initialData?.driveLink ?? "",
@@ -70,6 +85,7 @@ export function ProjectModal({ open, onClose, onSave, initialDate, initialData, 
       setForm({
         title: initialData?.title ?? "",
         channelId: initialData?.channelId ?? "",
+        videoType: normalizeVideoType(initialData?.videoType),
         stage: initialData?.stage ?? "Pronto",
         publishDate: initialData?.publishDate ?? initialDate ?? new Date().toISOString().split("T")[0],
         driveLink: initialData?.driveLink ?? "",
@@ -173,7 +189,7 @@ export function ProjectModal({ open, onClose, onSave, initialDate, initialData, 
             </div>
           </div>
 
-          {/* Row 2: Stage */}
+          {/* Row 2: Stage + Type */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className={LABEL}>Estágio de Produção</label>
@@ -182,6 +198,15 @@ export function ProjectModal({ open, onClose, onSave, initialDate, initialData, 
                 onChange={(val) => set("stage", val)}
                 placeholder="Selecionar estágio..."
                 options={STAGES.map((s) => ({ value: s, label: s }))}
+              />
+            </div>
+            <div>
+              <label className={LABEL}>Tipo de Conteúdo</label>
+              <Select
+                value={form.videoType}
+                onChange={(val) => set("videoType", val as ProjectFormData["videoType"])}
+                placeholder="Selecionar tipo..."
+                options={VIDEO_TYPES}
               />
             </div>
           </div>

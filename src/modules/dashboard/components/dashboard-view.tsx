@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ChannelModal } from "@/modules/dashboard/components/channels-view";
-import { ProjectModal } from "@/modules/dashboard/components/project-modal";
+import { ProjectModal, normalizeVideoType } from "@/modules/dashboard/components/project-modal";
 import { useChannels } from "@/shared/hooks/use-channels";
 import { useChannelMutations } from "@/shared/hooks/use-channel-mutations";
 import { useVideos } from "@/shared/hooks/use-videos";
@@ -377,6 +377,7 @@ export function DashboardView({ displayName }: { displayName: string }) {
         initialData={editingVideo ? {
           title: editingVideo.title,
           channelId: editingVideo.channel_id,
+          videoType: normalizeVideoType(editingVideo.video_type),
           stage: editingVideo.status ?? "Pronto",
           publishDate: editingVideo.publish_date ? new Date(editingVideo.publish_date).toISOString().split("T")[0] : new Date().toISOString().split("T")[0],
           driveLink: editingVideo.drive_link ?? "",
@@ -392,6 +393,7 @@ export function DashboardView({ displayName }: { displayName: string }) {
               await updateVideo(editingVideo.id, {
                 title: data.title,
                 channel_id: data.channelId,
+                video_type: data.videoType,
                 status: data.stage as any,
                 publish_date: data.publishDate || null,
                 drive_link: data.driveLink || null,
@@ -416,7 +418,7 @@ export function DashboardView({ displayName }: { displayName: string }) {
                 description: data.description || null,
                 notes: data.notes || null,
                 priority: "media",
-                video_type: "Vídeo Standard",
+                video_type: data.videoType,
               });
               toast.success("Vídeo criado com sucesso!");
             }
