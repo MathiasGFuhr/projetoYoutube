@@ -74,29 +74,37 @@ export function ProjectModal({ open, onClose, onSave, initialDate, initialData, 
   const [tagInput, setTagInput] = useState("");
   const [copied, setCopied] = useState(false);
   const thumbRef = useRef<HTMLInputElement>(null);
+  const lastFormKeyRef = useRef<string | null>(null);
   const [showChannelModal, setShowChannelModal] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const { channels, refetch } = useChannels();
   const { createChannel } = useChannelMutations();
 
-  // Reset form when modal opens with new initialData or initialDate
   useEffect(() => {
-    if (open) {
-      setForm({
-        title: initialData?.title ?? "",
-        channelId: initialData?.channelId ?? "",
-        videoType: normalizeVideoType(initialData?.videoType),
-        stage: initialData?.stage ?? "Pronto",
-        publishDate: initialData?.publishDate ?? initialDate ?? new Date().toISOString().split("T")[0],
-        driveLink: initialData?.driveLink ?? "",
-        localPath: initialData?.localPath ?? "",
-        tags: initialData?.tags ?? [],
-        thumbnail: initialData?.thumbnail ?? "",
-        description: initialData?.description ?? "",
-        notes: initialData?.notes ?? "",
-      });
+    if (!open) {
+      lastFormKeyRef.current = null;
+      return;
     }
-  }, [open, initialDate, initialData]);
+
+    const formKey = videoId ?? `new:${initialDate ?? ""}`;
+    if (lastFormKeyRef.current === formKey) return;
+    lastFormKeyRef.current = formKey;
+
+    setForm({
+      title: initialData?.title ?? "",
+      channelId: initialData?.channelId ?? "",
+      videoType: normalizeVideoType(initialData?.videoType),
+      stage: initialData?.stage ?? "Pronto",
+      publishDate: initialData?.publishDate ?? initialDate ?? new Date().toISOString().split("T")[0],
+      driveLink: initialData?.driveLink ?? "",
+      localPath: initialData?.localPath ?? "",
+      tags: initialData?.tags ?? [],
+      thumbnail: initialData?.thumbnail ?? "",
+      description: initialData?.description ?? "",
+      notes: initialData?.notes ?? "",
+    });
+    setTagInput("");
+  }, [open, videoId, initialDate]);
 
   const handleSave = async () => {
     if (!onSave || !form.title.trim()) return;
