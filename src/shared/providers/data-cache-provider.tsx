@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useCallback, useMemo } from "react";
+import { createContext, useContext, useState, useCallback, useMemo, type SetStateAction } from "react";
 import type { Tables } from "@/lib/supabase/database.types";
 
 export type Channel = Tables<"channels">;
@@ -8,9 +8,9 @@ export type Video = Tables<"videos">;
 
 interface DataCacheContextValue {
   channels: Channel[];
-  setChannels: (channels: Channel[]) => void;
+  setChannels: (channels: SetStateAction<Channel[]>) => void;
   videos: Video[];
-  setVideos: (videos: Video[]) => void;
+  setVideos: (videos: SetStateAction<Video[]>) => void;
   lastFetch: { channels: number; videos: number };
   markFetched: (key: "channels" | "videos") => void;
 }
@@ -24,11 +24,11 @@ export function DataCacheProvider({ children }: { readonly children: React.React
   const [videos, setVideosState] = useState<Video[]>([]);
   const [lastFetch, setLastFetch] = useState({ channels: 0, videos: 0 });
 
-  const setChannels = useCallback((data: Channel[]) => {
+  const setChannels = useCallback((data: SetStateAction<Channel[]>) => {
     setChannelsState(data);
   }, []);
 
-  const setVideos = useCallback((data: Video[]) => {
+  const setVideos = useCallback((data: SetStateAction<Video[]>) => {
     setVideosState(data);
   }, []);
 
